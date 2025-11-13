@@ -66,7 +66,7 @@ button {
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #FF3A00;
 }
 
 .infoText {
@@ -85,3 +85,4 @@ button:hover {
     width: 100%;
   }
 }
+
