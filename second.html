@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cuadrante RBS</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Cuadrante RBS</h1>
+
+    <!-- Cuadrante de trabajo -->
+    <h2 id="textDisplay" readonly rows="4"></h2>
+    <button id="copyBtn">Copiar cuadrante</button>
+
+    <!-- Información adicional -->
+    <p id="infoText" class="infoText"></p>
+  </div>
+
+  <script>
+    // Evitar volver con el botón de atrás del navegador
+    history.pushState(null, "", location.href);
+    window.onpopstate = () => history.go(1);
+
+    // Cargar datos del localStorage
+    const cuadrante = localStorage.getItem("inputText");
+    const info = localStorage.getItem("additionalText");
+
+    document.getElementById("textDisplay").value = cuadrante || "";
+    document.getElementById("infoText").textContent = info || "";
+
+    // Copiar cuadrante al portapapeles
+    document.getElementById("copyBtn").addEventListener("click", () => {
+      const textArea = document.getElementById("textDisplay");
+      textArea.select();
+      textArea.setSelectionRange(0, 99999);
+      document.execCommand("copy");
+      alert("Cuadrante copiado al portapapeles ✅");
+    });
+  </script>
+</body>
+</html>
