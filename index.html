@@ -24,10 +24,55 @@
       Guardar esta información adicional
     </label>
 
-    <!-- Botón para ir a la segunda página -->
-    <button onclick="goToSecondPage()">Ir a Cuadrante</button>
+    <!-- Botón -->
+    <button id="goBtn">Ir a Cuadrante</button>
   </div>
 
-  <script src="script.js"></script>
+  <!-- ✅ SDK modular de Firebase desde CDN -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    // ✅ Configuración de tu proyecto Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCYJBdDV0KoyUkFLb2vqCe5T8bGxPbMeLA",
+      authDomain: "cuadrante-rbs.firebaseapp.com",
+      databaseURL: "https://cuadrante-rbs-default-rtdb.firebaseio.com",
+      projectId: "cuadrante-rbs",
+      storageBucket: "cuadrante-rbs.firebasestorage.app",
+      messagingSenderId: "681753503592",
+      appId: "1:681753503592:web:e0c29422e66c25b3b498dd",
+      measurementId: "G-XG96N752K9"
+    };
+
+    // Inicializar Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Guardar datos en la base de datos y redirigir
+    document.getElementById("goBtn").addEventListener("click", async () => {
+      const text = document.getElementById("textInput").value.trim();
+      const additionalText = document.getElementById("additionalText").value.trim();
+      const saveInfo = document.getElementById("saveInfo").checked;
+
+      if (!text) {
+        alert("Por favor, introduce el cuadrante de trabajo.");
+        return;
+      }
+
+      try {
+        // 🔹 Guardamos los datos en Firebase Realtime Database
+        await set(ref(db, "cuadrante"), {
+          cuadrante: text,
+          info: saveInfo ? additionalText : "",
+          timestamp: Date.now()
+        });
+
+        window.location.href = "second.html";
+      } catch (error) {
+        alert("❌ Error al guardar: " + error.message);
+      }
+    });
+  </script>
 </body>
 </html>
