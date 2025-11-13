@@ -13,6 +13,10 @@ body {
   background-color: #f4f4f9;
 }
 
+p {
+  font-size: 30px;
+}
+
 .container {
   text-align: center;
   max-width: 600px;
@@ -85,4 +89,5 @@ button:hover {
     width: 100%;
   }
 }
+
 
