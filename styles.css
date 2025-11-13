@@ -61,7 +61,7 @@ textarea {
 button {
   margin-top: 15px;
   padding: 10px 20px;
-  background-color: #007bff;
+  background-color: #FF3A00;
   color: white;
   border: none;
   border-radius: 4px;
@@ -70,7 +70,7 @@ button {
 }
 
 button:hover {
-  background-color: #FF3A00;
+  background-color: #AB2202;
 }
 
 .infoText {
@@ -89,5 +89,6 @@ button:hover {
     width: 100%;
   }
 }
+
 
 
