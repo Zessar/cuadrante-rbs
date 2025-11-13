@@ -10,33 +10,49 @@
   <div class="container">
     <h1>Cuadrante RBS</h1>
 
-    <!-- Cuadrante de trabajo -->
-    <h2 id="textDisplay" readonly rows="4"></h2>
+    <!-- Cuadrante -->
+    <h2 id="textDisplay"></h2>
     <button id="copyBtn">Copiar cuadrante</button>
 
     <!-- Información adicional -->
     <p id="infoText" class="infoText"></p>
   </div>
 
-  <script>
-    // Evitar volver con el botón de atrás del navegador
-    history.pushState(null, "", location.href);
-    window.onpopstate = () => history.go(1);
+  <!-- ✅ SDK modular de Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    // Cargar datos del localStorage
-    const cuadrante = localStorage.getItem("inputText");
-    const info = localStorage.getItem("additionalText");
+    // Configuración Firebase (misma que en index.html)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCYJBdDV0KoyUkFLb2vqCe5T8bGxPbMeLA",
+      authDomain: "cuadrante-rbs.firebaseapp.com",
+      databaseURL: "https://cuadrante-rbs-default-rtdb.firebaseio.com",
+      projectId: "cuadrante-rbs",
+      storageBucket: "cuadrante-rbs.firebasestorage.app",
+      messagingSenderId: "681753503592",
+      appId: "1:681753503592:web:e0c29422e66c25b3b498dd",
+      measurementId: "G-XG96N752K9"
+    };
 
-    document.getElementById("textDisplay").value = cuadrante || "";
-    document.getElementById("infoText").textContent = info || "";
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    // Copiar cuadrante al portapapeles
+    // Escuchar los datos en tiempo real
+    const cuadranteRef = ref(db, "cuadrante");
+    onValue(cuadranteRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        document.getElementById("textDisplay").textContent = data.cuadrante || "";
+        document.getElementById("infoText").textContent = data.info || "";
+      }
+    });
+
+    // Copiar texto al portapapeles
     document.getElementById("copyBtn").addEventListener("click", () => {
-      const textArea = document.getElementById("textDisplay");
-      textArea.select();
-      textArea.setSelectionRange(0, 99999);
-      document.execCommand("copy");
-      alert("Cuadrante copiado al portapapeles ✅");
+      const text = document.getElementById("textDisplay").textContent;
+      navigator.clipboard.writeText(text);
+      alert("✅ Cuadrante copiado al portapapeles");
     });
   </script>
 </body>
