@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Picker Autónomo</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; }
+.container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);}
+h1 { text-align: center; margin-bottom: 20px; }
+.cuadrante-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; margin-bottom: 6px; border-radius: 5px; color: white; font-weight: bold; }
+.cuadrante-baja { background-color: #28a745; }
+.cuadrante-media { background-color: #ffc107; color: black; }
+.cuadrante-alta { background-color: #dc3545; }
+button.copy-btn { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; background: #333; color: white; }
+button.copy-btn:hover { background: #555; }
+#msgContainer { margin-top: 20px; padding: 10px; background: #e0e0e0; border-radius: 6px; }
+@media (max-width: 600px) {
+  .container { width: 95%; padding: 15px; }
+  .cuadrante-item { flex-direction: column; align-items: flex-start; gap: 5px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1 id="pickerTitle">Cuadrantes RBS</h1>
+<div id="cuadrantesContainer"></div>
+<div id="msgContainer"></div>
+</div>
+
+<script>
+// Obtener parámetros de la URL
+function getQueryParams() {
+  const params = new URLSearchParams(window.location.search);
+  const title = params.get('title') || 'Cuadrantes RBS';
+  const msg = params.get('msg') || '';
+  const rawCuadrantes = params.get('cuadrantes') || '';
+  const cuadrantes = rawCuadrantes.split(',').map(c => {
+    const [code, priority] = c.split('|');
+    return { code, priority: priority || 'baja' };
+  });
+  return { title, msg, cuadrantes };
+}
+
+// Renderizar cuadrantes
+function renderCuadrantes() {
+  const { title, msg, cuadrantes } = getQueryParams();
+  document.getElementById('pickerTitle').textContent = title;
+  const container = document.getElementById('cuadrantesContainer');
+  container.innerHTML = '';
+  cuadrantes.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'cuadrante-item cuadrante-' + c.priority;
+    const span = document.createElement('span');
+    span.textContent = c.code;
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'Copiar';
+    btn.onclick = () => { navigator.clipboard.writeText(c.code); alert('✅ Cuadrante copiado: ' + c.code); };
+    div.appendChild(span);
+    div.appendChild(btn);
+    container.appendChild(div);
+  });
+  // Mensaje genérico
+  const msgDiv = document.getElementById('msgContainer');
+  msgDiv.textContent = msg;
+}
+
+renderCuadrantes();
+</script>
+</body>
+</html>
