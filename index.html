@@ -299,9 +299,10 @@ function notifyUser(title, body){
 
 <!-- FIREBASE MODULE -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getFirestore, collection, doc, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
+// --- Config Firebase ---
 const firebaseConfig = {
     apiKey: "AIzaSyCbh2FcoS3IK4wp4hXhX0NICGIDBbFQhGU",
     authDomain: "gestor-de-plantas.firebaseapp.com",
@@ -314,17 +315,50 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// --- Variables ---
+let currentPicker = null;
+let unsubscribe = null;
+const notificationSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+
+// --- Pedir permiso de notificación ---
 if(Notification.permission !== 'granted' && Notification.permission !== 'denied'){
     Notification.requestPermission();
 }
 
+// --- Abrir chat ---
+window.openPickerChat = function(pickerNum){
+    currentPicker = pickerNum;
+    document.getElementById('chatTitle').innerText = 'Chat Picker '+pickerNum;
+    document.getElementById('chatModal').style.display='flex';
+    loadMessages();
+}
+
+// --- Cerrar chat ---
+window.closeChat = function(){
+    document.getElementById('chatModal').style.display='none';
+    document.getElementById('chatMessages').innerHTML='';
+    if(unsubscribe){ unsubscribe(); unsubscribe=null; }
+}
+
+// --- Notificación ---
+function notifyUser(title, body){
+    if(Notification.permission==='granted'){
+        new Notification(title,{body});
+        notificationSound.play();
+    }
+}
+
+// --- Cargar mensajes en tiempo real ---
 window.loadMessages = function(){
     if(!currentPicker) return;
     const chatContainer = document.getElementById('chatMessages');
     chatContainer.innerHTML='';
-    const messagesRef = collection(db,'pickers_chat','picker_'+currentPicker,'messages');
+
+    // Colección Firestore: pickers / picker_X / chat
+    const messagesRef = collection(db, 'pickers', 'picker_'+currentPicker, 'chat');
     const q = query(messagesRef, orderBy('timestamp'));
-    if(unsubscribe) unsubscribe();
+
+    if(unsubscribe) unsubscribe(); // cancelar listener anterior
     unsubscribe = onSnapshot(q, snapshot=>{
         chatContainer.innerHTML='';
         snapshot.forEach(docSnap=>{
@@ -335,6 +369,8 @@ window.loadMessages = function(){
             chatContainer.appendChild(div);
         });
         chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        // Notificar si hay mensaje nuevo de picker
         if(snapshot.docs.length>0){
             const last = snapshot.docs[snapshot.docs.length-1].data();
             if(last.user!=='Gestor') notifyUser('Nuevo mensaje Picker '+currentPicker, last.text);
@@ -342,11 +378,13 @@ window.loadMessages = function(){
     });
 }
 
+// --- Enviar mensaje ---
 window.sendMessage = async function(){
     const input = document.getElementById('chatInput');
     const text = input.value.trim();
     if(!text || !currentPicker) return;
-    await addDoc(collection(db,'pickers_chat','picker_'+currentPicker,'messages'),{
+
+    await addDoc(collection(db,'pickers','picker_'+currentPicker,'chat'),{
         user:'Gestor',
         text,
         timestamp:serverTimestamp()
@@ -354,5 +392,7 @@ window.sendMessage = async function(){
     input.value='';
 }
 </script>
+
 </body>
 </html>
+
