@@ -1,38 +1,37 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel Planta 1</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f0f0f5; padding: 20px; }
-    .layout { display: flex; gap: 20px; flex-wrap: wrap; }
-    .panel {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      flex: 1;
-      min-width: 300px;
-    }
-    h2 { margin-bottom: 15px; }
-    ul { padding-left: 20px; }
-    .barcode-container {
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .barcode-container img {
-      width: 100%;
-      max-width: 300px;
-      height: 150px; /* altura reducida para que entren varios */
-      object-fit: contain;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Planta 2</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f0f0f5; padding: 20px; }
+.layout { display: flex; gap: 20px; flex-wrap: wrap; }
+.panel {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  flex: 1;
+  min-width: 300px;
+}
+h2 { margin-bottom: 15px; }
+ul { padding-left: 20px; }
+.barcode-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+.barcode-container img {
+  width: 100%;
+  height: 150px;
+  object-fit: contain;
+}
+</style>
 </head>
 <body>
-<h1>Panel Planta 1</h1>
+<h1>Panel Planta 2</h1>
 <div class="layout">
 
   <!-- PANEL IZQUIERDO -->
@@ -53,28 +52,22 @@
 </div>
 
 <script>
-// Obtener parámetros
 const params = new URLSearchParams(window.location.search);
 const title = params.get("title") || "";
 const users = params.get("users") || "";
 const msg = params.get("msg") || "";
 const cuadrantesStr = params.get("cuadrantes") || "";
 
-// Colocar datos en la vista
 document.getElementById("titulo").textContent = title;
 document.getElementById("mensaje").textContent = msg;
-
-// Lista de usuarios
 document.getElementById("listaUsuarios").innerHTML = users
   .split(',')
   .map(u => `<li>${u.trim()}</li>`)
   .join('');
 
-// Mostrar todos los cuadrantes con código de barras
 const barcodeContainer = document.getElementById("barcodeContainer");
-const cuadrantes = cuadrantesStr.split(',').filter(c => c.trim() !== '');
 barcodeContainer.innerHTML = '';
-cuadrantes.forEach(c => {
+cuadrantesStr.split(',').filter(c=>c.trim()!=='').forEach(c=>{
   const img = document.createElement("img");
   img.src = `https://bwipjs-api.metafloor.com/?bcid=code128&text=${c.trim()}&scale=4&includetext`;
   barcodeContainer.appendChild(img);
