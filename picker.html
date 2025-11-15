@@ -3,19 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <title>Picker Chat</title>
+
 <style>
 body { font-family: Arial; background:#f0f0f5; padding:20px; }
 h2 { text-align:center; }
-#chatContainer { border:1px solid #ccc; border-radius:10px; padding:10px; max-width:500px; margin:auto; background:white; }
-#messages { height:300px; overflow-y:auto; border:1px solid #ddd; padding:5px; margin-bottom:10px; background:#fafafa; }
-input { width:80%; padding:8px; border-radius:5px; border:1px solid #ccc; }
-button { padding:8px 12px; border:none; border-radius:5px; background:#FF3A00; color:white; cursor:pointer; }
+
+#chatContainer {
+  border:1px solid #ccc; border-radius:10px; padding:10px;
+  max-width:500px; margin:auto; background:white;
+}
+
+#messages {
+  height:300px; overflow-y:auto; border:1px solid #ddd;
+  padding:5px; margin-bottom:10px; background:#fafafa;
+}
+
+input {
+  width:80%; padding:8px; border-radius:5px; border:1px solid #ccc;
+}
+
+button {
+  padding:8px 12px; border:none; border-radius:5px;
+  background:#FF3A00; color:white; cursor:pointer;
+}
+
 #cuadrantes { margin-bottom:10px; }
 .cuadrante-item { margin-bottom:5px; }
 </style>
 </head>
 
 <body>
+
 <h2 id="pickerTitle">Picker</h2>
 <div id="cuadrantes"></div>
 
@@ -25,17 +43,14 @@ button { padding:8px 12px; border:none; border-radius:5px; background:#FF3A00; c
   <button onclick="sendMessage()">Enviar</button>
 </div>
 
+<!-- Firebase compat (MISMO SDK QUE INDEX) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-<!-- Firebase (SDK modular) -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { 
-  getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp 
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
-// ------------------------------------------------------
-// 🔥 CONFIGURACIÓN REAL DE TU FIREBASE
-// ------------------------------------------------------
+<script>
+// -------------------------------------------
+//  🔥 MISMA CONFIG QUE index.html
+// -------------------------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyCbh2FcoS3IK4wp4hXhX0NICGIDBbFQhGU",
   authDomain: "gestor-de-plantas.firebaseapp.com",
@@ -46,78 +61,91 @@ const firebaseConfig = {
   measurementId: "G-G7PN58F09R"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-// ------------------------------------------------------
-// 🔧 GET PARAMS
-// ------------------------------------------------------
-const urlParams = new URLSearchParams(window.location.search);
-const pickerNum = urlParams.get('pickerNum') || "1";
+// Sonido
+const notificationSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+
+// -------------------------------------------
+//  🔧 PARÁMETROS
+// -------------------------------------------
+const params = new URLSearchParams(window.location.search);
+const pickerNum = params.get("pickerNum") || "1";
+
 document.getElementById("pickerTitle").innerText = "Picker " + pickerNum;
 
-// ------------------------------------------------------
-// 📦 MOSTRAR CUADRANTES
-// ------------------------------------------------------
-const cuadrantesDiv = document.getElementById("cuadrantes");
-const cuadrantesParam = urlParams.get("cuadrantes");
+// Mostrar cuadrantes
+const cDiv = document.getElementById("cuadrantes");
+const cuadrantesParam = params.get("cuadrantes");
 
 if (cuadrantesParam) {
   cuadrantesParam.split(",").forEach(c => {
     const d = document.createElement("div");
     d.className = "cuadrante-item";
     d.innerText = c;
-    cuadrantesDiv.appendChild(d);
+    cDiv.appendChild(d);
   });
 }
 
-// ------------------------------------------------------
-// 💬 CHAT (REAL TIME)
-// ------------------------------------------------------
+// -------------------------------------------
+//  💬 CHAT EN TIEMPO REAL
+// -------------------------------------------
 const messagesDiv = document.getElementById("messages");
 
-const q = query(
-  collection(db, "pickers_chat", "picker_" + pickerNum, "messages"),
-  orderBy("timestamp")
-);
+db.collection("pickers_chat")
+  .doc("picker_" + pickerNum)
+  .collection("messages")
+  .orderBy("timestamp")
+  .onSnapshot(snapshot => {
 
-onSnapshot(q, snapshot => {
-  messagesDiv.innerHTML = "";
-  snapshot.forEach(docSnap => {
-    const msg = docSnap.data();
-    const div = document.createElement("div");
-    div.innerHTML = `<b>${msg.user}:</b> ${msg.text}`;
-    messagesDiv.appendChild(div);
+    messagesDiv.innerHTML = "";
+
+    snapshot.forEach(doc => {
+      const msg = doc.data();
+      const div = document.createElement("div");
+      div.innerHTML = `<b>${msg.user}:</b> ${msg.text}`;
+      messagesDiv.appendChild(div);
+    });
+
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    // Notificación si último mensaje NO es del picker
+    if (snapshot.docs.length > 0) {
+      const last = snapshot.docs[snapshot.docs.length - 1].data();
+      if (last.user !== "Gestor") {
+        if (Notification.permission === "granted") {
+          new Notification(`Nuevo mensaje del Gestor`, { body: last.text });
+          notificationSound.play();
+        }
+      }
+    }
+
   });
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-});
 
-// ------------------------------------------------------
-// 🚀 ENVIAR MENSAJE
-// ------------------------------------------------------
-window.sendMessage = async function sendMessage() {
+// -------------------------------------------
+//  🚀 ENVIAR MENSAJE
+// -------------------------------------------
+function sendMessage(){
   const input = document.getElementById("chatInput");
   const text = input.value.trim();
   if (!text) return;
 
-  await addDoc(
-    collection(db, "pickers_chat", "picker_" + pickerNum, "messages"),
-    {
+  db.collection("pickers_chat")
+    .doc("picker_" + pickerNum)
+    .collection("messages")
+    .add({
       user: "Picker " + pickerNum,
       text,
-      timestamp: serverTimestamp()
-    }
-  );
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
 
   input.value = "";
-};
-
-// ------------------------------------------------------
-// 🔔 NOTIFICACIONES (PEDIR PERMISO)
-// ------------------------------------------------------
-if (Notification.permission !== "granted") {
-  Notification.requestPermission();
 }
+
+// Solicitar permiso notificaciones
+if (Notification.permission !== "granted") Notification.requestPermission();
+
 </script>
 
 </body>
