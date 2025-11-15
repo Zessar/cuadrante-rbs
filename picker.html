@@ -8,6 +8,7 @@
 body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; }
 .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);}
 h1 { text-align: center; margin-bottom: 20px; }
+
 .cuadrante-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; margin-bottom: 6px; border-radius: 5px; color: white; font-weight: bold; }
 .cuadrante-baja { background-color: #28a745; }
 .cuadrante-media { background-color: #ffc107; color: black; }
@@ -45,20 +46,21 @@ button.copy-btn:hover { background: #555; }
 </div>
 
 <script>
-// Obtener parámetros de la URL
+// --- Obtener parámetros de la URL ---
 function getQueryParams() {
   const params = new URLSearchParams(window.location.search);
   const title = params.get('title') || 'Cuadrantes RBS';
   const msg = params.get('msg') || '';
   const rawCuadrantes = params.get('cuadrantes') || '';
+  const pickerNum = params.get('picker') || '1';
   const cuadrantes = rawCuadrantes.split(',').map(c => {
     const [code, priority] = c.split('|');
     return { code, priority: priority || 'baja' };
   });
-  return { title, msg, cuadrantes };
+  return { title, msg, cuadrantes, pickerNum };
 }
 
-// Renderizar cuadrantes
+// --- Renderizar cuadrantes ---
 function renderCuadrantes() {
   const { title, msg, cuadrantes } = getQueryParams();
   document.getElementById('pickerTitle').textContent = title;
@@ -77,17 +79,15 @@ function renderCuadrantes() {
     div.appendChild(btn);
     container.appendChild(div);
   });
-  const msgDiv = document.getElementById('msgContainer');
-  msgDiv.textContent = msg;
+  document.getElementById('msgContainer').textContent = msg;
 }
-
 renderCuadrantes();
 </script>
 
 <!-- FIREBASE CHAT -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCbh2FcoS3IK4wp4hXhX0NICGIDBbFQhGU",
@@ -101,12 +101,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Identificar picker actual por URL
-const pickerId = getQueryParams().title.replace(/\s+/g,'_');
+// Notificaciones
+const notificationSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+if(Notification.permission !== 'granted' && Notification.permission !== 'denied'){
+    Notification.requestPermission();
+}
 
-// Cargar mensajes en tiempo real
+// Picker actual
+const { pickerNum } = getQueryParams();
+const pickerId = 'picker_' + pickerNum;
+
+// --- Cargar mensajes en tiempo real ---
 const chatMessagesDiv = document.getElementById('chatMessages');
-const messagesRef = collection(db,'pickers_chat','picker_'+pickerId,'messages');
+const messagesRef = collection(db,'pickers',pickerId,'chat');
 const q = query(messagesRef, orderBy('timestamp'));
 onSnapshot(q, snapshot=>{
   chatMessagesDiv.innerHTML='';
@@ -118,9 +125,14 @@ onSnapshot(q, snapshot=>{
     chatMessagesDiv.appendChild(div);
   });
   chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+
+  if(snapshot.docs.length>0){
+    const last = snapshot.docs[snapshot.docs.length-1].data();
+    if(last.user !== pickerId) new Notification('Nuevo mensaje', {body:last.text}).play();
+  }
 });
 
-// Enviar mensaje
+// --- Enviar mensaje ---
 window.sendMessage = async function(){
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
@@ -133,6 +145,5 @@ window.sendMessage = async function(){
   input.value='';
 }
 </script>
-
 </body>
 </html>
