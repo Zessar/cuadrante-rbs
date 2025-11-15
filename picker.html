@@ -68,10 +68,9 @@ function getQueryParams() {
   return { title, msg, cuadrantes, pickerNum };
 }
 
-// --- Renderizar cuadrantes clicables ---
-function renderCuadrantes() {
-  const { title, msg, cuadrantes } = getQueryParams();
-  document.getElementById('pickerTitle').textContent = title;
+// --- Renderizar cuadrantes ---
+function renderCuadrantes(cuadrantes, title, msg){
+  document.getElementById('pickerTitle').textContent = title || 'Cuadrantes RBS';
   const container = document.getElementById('cuadrantesContainer');
   container.innerHTML = '';
   cuadrantes.forEach(c => {
@@ -84,12 +83,25 @@ function renderCuadrantes() {
     };
     container.appendChild(div);
   });
-  document.getElementById('msgContainer').textContent = msg;
+  document.getElementById('msgContainer').textContent = msg || '';
 }
-renderCuadrantes();
+
+// --- Inicializar con URL ---
+const initialParams = getQueryParams();
+renderCuadrantes(initialParams.cuadrantes, initialParams.title, initialParams.msg);
+
+// --- Escuchar mensajes de index.html ---
+window.addEventListener('message', (event)=>{
+  if(!event.data) return;
+  const { type, data } = event.data;
+  if(type==='update'){
+    renderCuadrantes(data.cuadrantes, data.title, data.msg);
+  } else if(type==='clearChat'){
+    document.getElementById('chatMessages').innerHTML='';
+  }
+});
 </script>
 
-<!-- FIREBASE CHAT -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
@@ -111,10 +123,11 @@ if(Notification.permission !== 'granted' && Notification.permission !== 'denied'
   Notification.requestPermission();
 }
 
-const { pickerNum } = getQueryParams();
-const pickerId = 'picker_' + pickerNum;
+// --- Identificador del picker ---
+let pickerNum = initialParams.pickerNum;
+let pickerId = 'picker_' + pickerNum;
 
-// CHAT POPUP
+// --- CHAT ---
 const chatModal = document.getElementById('chatModal');
 const chatMessagesDiv = document.getElementById('chatMessages');
 let chatOpen = false;
@@ -122,7 +135,7 @@ let chatOpen = false;
 window.closeChat = () => { chatModal.style.display='none'; chatOpen=false; };
 document.getElementById('openChatBtn').onclick = () => { chatModal.style.display='flex'; chatOpen=true; chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; };
 
-// --- Escuchar mensajes ---
+// Escuchar chat en tiempo real
 const messagesRef = collection(db,'pickers',pickerId,'chat');
 const q = query(messagesRef, orderBy('timestamp'));
 onSnapshot(q, snapshot=>{
@@ -160,5 +173,6 @@ window.sendMessage = async function(){
   input.value='';
 }
 </script>
+
 </body>
 </html>
