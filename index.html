@@ -41,6 +41,30 @@ button.submit-btn:hover { background: #AB2202; }
   gap: 20px;
   margin-bottom: 30px;
 }
+
+/* CHAT MODAL */
+#chatModal {
+  display:none;
+  position:fixed;
+  top:10%;
+  right:10%;
+  width:350px;
+  max-height:500px;
+  background:white;
+  border-radius:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.2);
+  flex-direction:column;
+  z-index:1000;
+  overflow:hidden;
+}
+#chatModalHeader {
+  background:#FF3A00; color:white; padding:10px; font-weight:bold; display:flex; justify-content:space-between;
+}
+#chatMessages { padding:10px; height:350px; overflow-y:auto; background:#f9f9f9; }
+#chatInputContainer { display:flex; padding:10px; border-top:1px solid #ddd; }
+#chatInput { flex:1; padding:8px; border-radius:5px; border:1px solid #ccc; }
+#chatInputContainer button { margin-left:5px; padding:8px 12px; background:#FF3A00; color:white; border:none; border-radius:5px; cursor:pointer; }
+
 </style>
 </head>
 <body>
@@ -185,8 +209,23 @@ button.submit-btn:hover { background: #AB2202; }
 </div>
 </div>
 
+</div>
+
+<!-- CHAT MODAL HTML -->
+<div id="chatModal">
+  <div id="chatModalHeader">
+    <span id="chatTitle">Chat Picker</span>
+    <button onclick="closeChat()">X</button>
+  </div>
+  <div id="chatMessages"></div>
+  <div id="chatInputContainer">
+    <input id="chatInput" type="text" placeholder="Escribe un mensaje...">
+    <button onclick="sendMessage()">Enviar</button>
+  </div>
+</div>
+
 <script>
-// Plantas
+// --- FUNCIONES PLANTAS ---
 function addCuadrante(plantNum){
   const container = document.getElementById(`p${plantNum}_cuadrantes_container`);
   const input = document.createElement('input');
@@ -212,7 +251,7 @@ function goToPlant(plantNum){
   else { console.error('Planta no encontrada:', plantNum); alert('No se encontró la URL para esta planta.'); }
 }
 
-// Pickers
+// --- FUNCIONES PICKERS ---
 function addPickerCuadrante(pickerNum){
   const container = document.getElementById(`picker${pickerNum}_cuadrantes_container`);
   const input = document.createElement('input'); input.type='text'; input.className='picker_input'; input.placeholder='QU0000346545';
@@ -231,8 +270,89 @@ function goToPicker(pickerNum){
   window.open(`picker.html?${params}`, '_blank');
 }
 
-function openPickerChat(pickerNum){ alert('Abrir chat del picker '+pickerNum+' (pendiente)'); }
+// --- CHAT FIREBASE ---
+let currentPicker=null;
+let unsubscribe=null;
+const notificationSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+
+window.openPickerChat = function(pickerNum){
+  currentPicker = pickerNum;
+  document.getElementById('chatTitle').innerText = 'Chat Picker '+pickerNum;
+  document.getElementById('chatModal').style.display='flex';
+  loadMessages();
+}
+
+window.closeChat = function(){
+  document.getElementById('chatModal').style.display='none';
+  document.getElementById('chatMessages').innerHTML='';
+  if(unsubscribe) { unsubscribe(); unsubscribe=null; }
+}
+
+function notifyUser(title, body){
+  if(Notification.permission==='granted'){
+    new Notification(title,{body});
+    notificationSound.play();
+  }
+}
+
 </script>
 
+<!-- FIREBASE MODULE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getFirestore, collection, doc, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCbh2FcoS3IK4wp4hXhX0NICGIDBbFQhGU",
+    authDomain: "gestor-de-plantas.firebaseapp.com",
+    projectId: "gestor-de-plantas",
+    storageBucket: "gestor-de-plantas.firebasestorage.app",
+    messagingSenderId: "653631965210",
+    appId: "1:653631965210:web:82e503927c1064610be9a3",
+    measurementId: "G-G7PN58F09R"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+if(Notification.permission !== 'granted' && Notification.permission !== 'denied'){
+    Notification.requestPermission();
+}
+
+window.loadMessages = function(){
+    if(!currentPicker) return;
+    const chatContainer = document.getElementById('chatMessages');
+    chatContainer.innerHTML='';
+    const messagesRef = collection(db,'pickers_chat','picker_'+currentPicker,'messages');
+    const q = query(messagesRef, orderBy('timestamp'));
+    if(unsubscribe) unsubscribe();
+    unsubscribe = onSnapshot(q, snapshot=>{
+        chatContainer.innerHTML='';
+        snapshot.forEach(docSnap=>{
+            const msg = docSnap.data();
+            const div = document.createElement('div');
+            div.style.marginBottom='8px';
+            div.innerHTML=`<b>${msg.user}:</b> ${msg.text}`;
+            chatContainer.appendChild(div);
+        });
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        if(snapshot.docs.length>0){
+            const last = snapshot.docs[snapshot.docs.length-1].data();
+            if(last.user!=='Gestor') notifyUser('Nuevo mensaje Picker '+currentPicker, last.text);
+        }
+    });
+}
+
+window.sendMessage = async function(){
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if(!text || !currentPicker) return;
+    await addDoc(collection(db,'pickers_chat','picker_'+currentPicker,'messages'),{
+        user:'Gestor',
+        text,
+        timestamp:serverTimestamp()
+    });
+    input.value='';
+}
+</script>
 </body>
 </html>
