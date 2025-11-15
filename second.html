@@ -52,26 +52,42 @@ ul { padding-left: 20px; }
 </div>
 
 <script>
+// --- Función para renderizar datos ---
+function renderPlanta(data){
+  document.getElementById("titulo").textContent = data.title || '';
+  document.getElementById("mensaje").textContent = data.msg || '';
+  document.getElementById("listaUsuarios").innerHTML = (data.users||'')
+    .split(',')
+    .map(u => `<li>${u.trim()}</li>`).join('');
+
+  const barcodeContainer = document.getElementById("barcodeContainer");
+  barcodeContainer.innerHTML = '';
+  (data.cuadrantes||[]).forEach(c=>{
+    const img = document.createElement("img");
+    img.src = `https://bwipjs-api.metafloor.com/?bcid=code128&text=${c.trim()}&scale=4&includetext`;
+    barcodeContainer.appendChild(img);
+  });
+}
+
+// --- Inicializar desde URL ---
 const params = new URLSearchParams(window.location.search);
-const title = params.get("title") || "";
-const users = params.get("users") || "";
-const msg = params.get("msg") || "";
-const cuadrantesStr = params.get("cuadrantes") || "";
+const initialData = {
+  title: params.get("title") || "",
+  users: params.get("users") || "",
+  msg: params.get("msg") || "",
+  cuadrantes: (params.get("cuadrantes")||"").split(',').filter(c=>c.trim()!=='')
+};
+renderPlanta(initialData);
 
-document.getElementById("titulo").textContent = title;
-document.getElementById("mensaje").textContent = msg;
-document.getElementById("listaUsuarios").innerHTML = users
-  .split(',')
-  .map(u => `<li>${u.trim()}</li>`)
-  .join('');
-
-const barcodeContainer = document.getElementById("barcodeContainer");
-barcodeContainer.innerHTML = '';
-cuadrantesStr.split(',').filter(c=>c.trim()!=='').forEach(c=>{
-  const img = document.createElement("img");
-  img.src = `https://bwipjs-api.metafloor.com/?bcid=code128&text=${c.trim()}&scale=4&includetext`;
-  barcodeContainer.appendChild(img);
+// --- Escuchar mensajes de index.html ---
+window.addEventListener('message', (event)=>{
+  if(!event.data) return;
+  const { type, data } = event.data;
+  if(type==='update'){
+    renderPlanta(data);
+  }
 });
 </script>
+
 </body>
 </html>
