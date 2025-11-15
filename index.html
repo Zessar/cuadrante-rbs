@@ -33,6 +33,14 @@ button.submit-btn:hover { background: #AB2202; }
 
 .cuadrante-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 5px; border-radius: 4px; }
 .cuadrante-item span { font-weight: bold; }
+
+/* GRID para pickers */
+.pickers-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
 </style>
 </head>
 <body>
@@ -40,7 +48,6 @@ button.submit-btn:hover { background: #AB2202; }
 <h1>Gestor de Plantas + Pickers</h1>
 
 <div class="form-row">
-
 <!-- FORMULARIOS DE PLANTAS -->
 <div class="plant-form" id="plant1Form">
   <h2>Planta 1</h2>
@@ -96,12 +103,11 @@ button.submit-btn:hover { background: #AB2202; }
   </div>
   <button class="submit-btn" onclick="goToPlant(3)">Ver Planta 3</button>
 </div>
-
 </div>
 
 <!-- FORMULARIOS PICKER AUTÓNOMO -->
 <h2>Pickers Autónomos</h2>
-
+<div class="pickers-container">
 <div class="picker-form" id="picker1Form">
   <h3>Picker 1</h3>
   <label>Título</label><input id="picker1_title" type="text">
@@ -177,6 +183,7 @@ button.submit-btn:hover { background: #AB2202; }
   <button class="submit-btn" onclick="goToPicker(4)">Ver Picker</button>
   <button class="submit-btn" onclick="openPickerChat(4)">Abrir Chat</button>
 </div>
+</div>
 
 <script>
 // Plantas
@@ -190,33 +197,19 @@ function addCuadrante(plantNum){
 }
 
 function goToPlant(plantNum){
-  // Asegurarse que plantNum es un número
   plantNum = Number(plantNum);
-
   const title = document.getElementById(`p${plantNum}_title`).value;
   const users = document.getElementById(`p${plantNum}_users`).value;
   const msg = document.getElementById(`p${plantNum}_msg`).value;
-  const cuadrantes = Array.from(
-    document.querySelectorAll(`#p${plantNum}_cuadrantes_container .cuadrante_input`)
-  ).map(i => i.value).filter(v => v);
-
+  const cuadrantes = Array.from(document.querySelectorAll(`#p${plantNum}_cuadrantes_container .cuadrante_input`))
+    .map(i => i.value).filter(v => v);
   const data = { title, users, msg, cuadrantes: cuadrantes.join(',') };
   const params = new URLSearchParams(data).toString();
 
-  // Mapeo de URLs por planta
-  const plantUrls = {
-    1: 'first.html',
-    2: 'second.html',
-    3: 'third.html'
-  };
-
+  const plantUrls = { 1:'first.html', 2:'second.html', 3:'third.html' };
   const url = plantUrls[plantNum];
-  if(url) {
-    window.open(`${url}?${params}`, '_blank');
-  } else {
-    console.error('Planta no encontrada:', plantNum);
-    alert('No se encontró la URL para esta planta.');
-  }
+  if(url) { window.open(`${url}?${params}`, '_blank'); }
+  else { console.error('Planta no encontrada:', plantNum); alert('No se encontró la URL para esta planta.'); }
 }
 
 // Pickers
@@ -239,34 +232,7 @@ function goToPicker(pickerNum){
 }
 
 function openPickerChat(pickerNum){ alert('Abrir chat del picker '+pickerNum+' (pendiente)'); }
-
-// Pickers
-function addPickerCuadrante(pickerNum){
-  const container = document.getElementById(`picker${pickerNum}_cuadrantes_container`);
-  const input = document.createElement('input'); input.type='text'; input.className='picker_input'; input.placeholder='QU0000346545';
-  const select = document.createElement('select'); select.className='picker_priority';
-  ['baja','media','alta'].forEach(p=> { const opt=document.createElement('option'); opt.value=p; opt.text=p; select.appendChild(opt); });
-  container.appendChild(input); container.appendChild(select);
-}
-
-function goToPicker(pickerNum){
-  const title = document.getElementById(`picker${pickerNum}_title`).value;
-  const msg = document.getElementById(`picker${pickerNum}_msg`).value;
-  const inputs = document.querySelectorAll(`#picker${pickerNum}_cuadrantes_container .picker_input`);
-  const selects = document.querySelectorAll(`#picker${pickerNum}_cuadrantes_container .picker_priority`);
-  const data = Array.from(inputs).map((i, idx)=> i.value + '|' + selects[idx].value);
-  const params = new URLSearchParams({ title, msg, cuadrantes: data.join(',') }).toString();
-  window.open(`picker.html?${params}`, '_blank');
-}
-
-function openPickerChat(pickerNum){ alert('Abrir chat del picker '+pickerNum+' (pendiente)'); }
-
 </script>
 
 </body>
 </html>
-
-
-
-
-
