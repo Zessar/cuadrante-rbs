@@ -190,23 +190,33 @@ function addCuadrante(plantNum){
 }
 
 function goToPlant(plantNum){
+  // Asegurarse que plantNum es un número
+  plantNum = Number(plantNum);
+
   const title = document.getElementById(`p${plantNum}_title`).value;
   const users = document.getElementById(`p${plantNum}_users`).value;
   const msg = document.getElementById(`p${plantNum}_msg`).value;
-  const cuadrantes = Array.from(document.querySelectorAll(`#p${plantNum}_cuadrantes_container .cuadrante_input`))
-    .map(i=>i.value).filter(v=>v);
-  const data = { title, users, msg, cuadrantes: cuadrantes.join(',')};
+  const cuadrantes = Array.from(
+    document.querySelectorAll(`#p${plantNum}_cuadrantes_container .cuadrante_input`)
+  ).map(i => i.value).filter(v => v);
+
+  const data = { title, users, msg, cuadrantes: cuadrantes.join(',') };
   const params = new URLSearchParams(data).toString();
 
-  // Abrir la URL correspondiente según la planta
-  let url = '';
-  switch(plantNum){
-    case 1: url = 'second.html'; break;
-    case 2: url = 'planta2.html'; break;
-    case 3: url = 'Planta3.html'; break;
-  }
+  // Mapeo de URLs por planta
+  const plantUrls = {
+    1: 'second.html',
+    2: 'planta2.html',
+    3: 'Planta3.html'
+  };
 
-  if(url) window.open(`${url}?${params}`, '_blank');
+  const url = plantUrls[plantNum];
+  if(url) {
+    window.open(`${url}?${params}`, '_blank');
+  } else {
+    console.error('Planta no encontrada:', plantNum);
+    alert('No se encontró la URL para esta planta.');
+  }
 }
 
 // Pickers
@@ -255,5 +265,6 @@ function openPickerChat(pickerNum){ alert('Abrir chat del picker '+pickerNum+' (
 
 </body>
 </html>
+
 
 
