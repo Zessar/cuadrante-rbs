@@ -17,8 +17,18 @@
     }
     h2 { margin-bottom: 15px; }
     ul { padding-left: 20px; }
-    .barcode { margin-top: 20px; text-align: center; }
-    #barcodeImg { width: 100%; max-width: 400px; }
+    .barcode-container {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .barcode-container img {
+      width: 100%;
+      max-width: 300px;
+      height: 80px; /* altura reducida para que entren varios */
+      object-fit: contain;
+    }
   </style>
 </head>
 <body>
@@ -36,11 +46,8 @@
 
   <!-- PANEL DERECHO -->
   <div class="panel">
-    <h2>CUADRANTE</h2>
-    <h3 id="cuadranteTxt"></h3>
-    <div class="barcode">
-      <img id="barcodeImg" />
-    </div>
+    <h2>CUADRANTES</h2>
+    <div class="barcode-container" id="barcodeContainer"></div>
   </div>
 
 </div>
@@ -51,12 +58,11 @@ const params = new URLSearchParams(window.location.search);
 const title = params.get("title") || "";
 const users = params.get("users") || "";
 const msg = params.get("msg") || "";
-const cuadrante = params.get("cuadrante") || "";
+const cuadrantesStr = params.get("cuadrantes") || "";
 
 // Colocar datos en la vista
 document.getElementById("titulo").textContent = title;
 document.getElementById("mensaje").textContent = msg;
-document.getElementById("cuadranteTxt").textContent = cuadrante;
 
 // Lista de usuarios
 document.getElementById("listaUsuarios").innerHTML = users
@@ -64,11 +70,15 @@ document.getElementById("listaUsuarios").innerHTML = users
   .map(u => `<li>${u.trim()}</li>`)
   .join('');
 
-// Generar código de barras usando API BWIPJS CDN
-if (cuadrante) {
-  const barcodeUrl = `https://bwipjs-api.metafloor.com/?bcid=code128&text=${cuadrante}&scale=4&includetext`; 
-  document.getElementById("barcodeImg").src = barcodeUrl;
-}
+// Mostrar todos los cuadrantes con código de barras
+const barcodeContainer = document.getElementById("barcodeContainer");
+const cuadrantes = cuadrantesStr.split(',').filter(c => c.trim() !== '');
+barcodeContainer.innerHTML = '';
+cuadrantes.forEach(c => {
+  const img = document.createElement("img");
+  img.src = `https://bwipjs-api.metafloor.com/?bcid=code128&text=${c.trim()}&scale=4&includetext`;
+  barcodeContainer.appendChild(img);
+});
 </script>
 </body>
 </html>
