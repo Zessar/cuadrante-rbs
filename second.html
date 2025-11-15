@@ -3,46 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel de Planta</title>
+  <title>Panel Planta 1</title>
   <style>
     body { font-family: Arial, sans-serif; background: #f0f0f5; padding: 20px; }
-    .layout { display: flex; gap: 20px; }
-
+    .layout { display: flex; gap: 20px; flex-wrap: wrap; }
     .panel {
       background: white;
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       flex: 1;
+      min-width: 300px;
     }
-
     h2 { margin-bottom: 15px; }
-
     ul { padding-left: 20px; }
-
-    .barcode {
-      margin-top: 20px;
-      text-align: center;
-    }
-
-    #barcodeImg {
-      width: 100%;
-      max-width: 400px;
-    }
+    .barcode { margin-top: 20px; text-align: center; }
+    #barcodeImg { width: 100%; max-width: 400px; }
   </style>
 </head>
 <body>
-
-<h1>Panel de Planta</h1>
+<h1>Panel Planta 1</h1>
 <div class="layout">
 
   <!-- PANEL IZQUIERDO -->
   <div class="panel">
     <h2 id="titulo"></h2>
-
     <h3>Usuarios</h3>
     <ul id="listaUsuarios"></ul>
-
     <h3>Mensaje</h3>
     <p id="mensaje"></p>
   </div>
@@ -51,7 +38,6 @@
   <div class="panel">
     <h2>CUADRANTE</h2>
     <h3 id="cuadranteTxt"></h3>
-
     <div class="barcode">
       <img id="barcodeImg" />
     </div>
@@ -78,12 +64,11 @@ document.getElementById("listaUsuarios").innerHTML = users
   .map(u => `<li>${u.trim()}</li>`)
   .join('');
 
-// Generar código de barras usando API gratuita (BWIPJS CDN)
+// Generar código de barras usando API BWIPJS CDN
 if (cuadrante) {
   const barcodeUrl = `https://bwipjs-api.metafloor.com/?bcid=code128&text=${cuadrante}&scale=4&includetext`; 
   document.getElementById("barcodeImg").src = barcodeUrl;
 }
 </script>
-
 </body>
 </html>
