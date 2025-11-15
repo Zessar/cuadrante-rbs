@@ -31,9 +31,6 @@ button.submit-btn {
 }
 button.submit-btn:hover { background: #AB2202; }
 
-.cuadrante-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 5px; border-radius: 4px; }
-.cuadrante-item span { font-weight: bold; }
-
 /* GRID para pickers */
 .pickers-container {
   display: grid;
@@ -64,7 +61,6 @@ button.submit-btn:hover { background: #AB2202; }
 #chatInputContainer { display:flex; padding:10px; border-top:1px solid #ddd; }
 #chatInput { flex:1; padding:8px; border-radius:5px; border:1px solid #ccc; }
 #chatInputContainer button { margin-left:5px; padding:8px 12px; background:#FF3A00; color:white; border:none; border-radius:5px; cursor:pointer; }
-
 </style>
 </head>
 <body>
@@ -251,7 +247,6 @@ function addCuadrante(plantNum){
 }
 
 function goToPlant(plantNum){
-    plantNum = Number(plantNum);
     const title = document.getElementById(`p${plantNum}_title`).value;
     const users = document.getElementById(`p${plantNum}_users`).value;
     const msg = document.getElementById(`p${plantNum}_msg`).value;
@@ -261,13 +256,12 @@ function goToPlant(plantNum){
 
     const plantUrls = { 1:'first.html', 2:'second.html', 3:'third.html' };
     const url = plantUrls[plantNum];
-    if(!url){ console.error('Planta no encontrada:', plantNum); alert('No se encontró la URL para esta planta.'); return; }
+    if(!url){ alert('No se encontró la URL para esta planta.'); return; }
 
-    // Si ya existe la ventana, actualiza
     if(openPlantWindows[plantNum] && !openPlantWindows[plantNum].closed){
         openPlantWindows[plantNum].postMessage({ type:'update', data }, '*');
     } else {
-        openPlantWindows[plantNum] = window.open(`${url}?dummy=1`, '_blank'); // apertura temporal
+        openPlantWindows[plantNum] = window.open(`${url}?dummy=1`, '_blank');
         setTimeout(()=> {
             if(openPlantWindows[plantNum] && !openPlantWindows[plantNum].closed){
                 openPlantWindows[plantNum].postMessage({ type:'update', data }, '*');
@@ -312,27 +306,30 @@ function goToPicker(pickerNum){
         return { code, priority };
     });
 
-    // Si ya existe la ventana, actualiza
+    // Abrir o actualizar picker.html
     if(openPickerWindows[pickerNum] && !openPickerWindows[pickerNum].closed){
-        openPickerWindows[pickerNum].postMessage({ type:'update', data }, '*');
+        openPickerWindows[pickerNum].postMessage({ type:'update', data: { title, msg, data } }, '*');
     } else {
-        openPickerWindows[pickerNum] = window.open('picker.html', '_blank'); // apertura temporal
+        openPickerWindows[pickerNum] = window.open('picker.html', '_blank');
         setTimeout(()=> {
             if(openPickerWindows[pickerNum] && !openPickerWindows[pickerNum].closed){
-                openPickerWindows[pickerNum].postMessage({ type:'update', data }, '*');
+                openPickerWindows[pickerNum].postMessage({ type:'update', data: { title, msg, data } }, '*');
             }
         }, 500);
     }
 }
 
-// --- BORRAR CHAT SOLO EN FRONT ---
+// --- BORRAR CHAT DESDE INDEX ---
 function clearPickerChat(pickerNum){
+    // envía mensaje a la ventana abierta para que haga limpieza local
     if(openPickerWindows[pickerNum] && !openPickerWindows[pickerNum].closed){
         openPickerWindows[pickerNum].postMessage({ type:'clearChat' }, '*');
     }
+    // aquí también puedes agregar código para borrar chat en Firebase
+    console.log(`Chat del Picker ${pickerNum} borrado desde index`);
 }
 
-// --- CHAT FIREBASE ---
+// --- CHAT MODAL ---
 let currentPickerChat = null;
 let unsubscribe = null;
 const notificationSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
@@ -341,7 +338,7 @@ window.openPickerChat = function(pickerNum){
     currentPickerChat = pickerNum;
     document.getElementById('chatTitle').innerText = 'Chat Picker '+pickerNum;
     document.getElementById('chatModal').style.display='flex';
-    loadMessages();
+    loadMessages(); // tu función de Firebase
 }
 
 window.closeChat = function(){
@@ -357,8 +354,6 @@ function notifyUser(title, body){
     }
 }
 </script>
-
-
 </body>
 </html>
 
