@@ -266,7 +266,12 @@ function goToPicker(pickerNum){
   const inputs = document.querySelectorAll(`#picker${pickerNum}_cuadrantes_container .picker_input`);
   const selects = document.querySelectorAll(`#picker${pickerNum}_cuadrantes_container .picker_priority`);
   const data = Array.from(inputs).map((i, idx)=> i.value + '|' + selects[idx].value);
-  const params = new URLSearchParams({ title, msg, cuadrantes: data.join(',') }).toString();
+  const params = new URLSearchParams({ 
+    title, 
+    msg, 
+    cuadrantes: data.join(','), 
+    picker: pickerNum  // <-- agregamos este parámetro
+  }).toString();
   window.open(`picker.html?${params}`, '_blank');
 }
 
@@ -395,4 +400,5 @@ window.sendMessage = async function(){
 
 </body>
 </html>
+
 
