@@ -3,76 +3,95 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cuadrante RBS - Principal</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>Gestor de Plantas - Landing</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f0f5; padding: 20px; }
+    .container { max-width: 1200px; margin: auto; }
+    h1 { text-align: center; margin-bottom: 30px; }
+
+    .plant-form {
+      background: white;
+      padding: 20px;
+      margin-bottom: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input, textarea {
+      width: 100%; padding: 8px; border: 1px solid #ccc;
+      border-radius: 5px; margin-top: 4px;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #FF3A00;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover { background: #AB2202; }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Cuadrante RBS</h1>
+<div class="container">
+  <h1>Gestor de Plantas - Control Principal</h1>
 
-    <!-- Campo principal -->
-    <label for="textInput">Cuadrante de trabajo:</label>
-    <input type="text" id="textInput" placeholder="Ejemplo: Semana 45 - Turno B" />
+  <!-- PLANTA 1 -->
+  <div class="plant-form">
+    <h2>Planta 1</h2>
 
-    <!-- Información adicional -->
-    <label for="additionalText">Información adicional:</label>
-    <textarea id="additionalText" placeholder="Ejemplo: Revisar incidencias..." rows="4"></textarea>
+    <label>Título del aviso</label>
+    <input type="text" id="p1_title" placeholder="Ej: Cambiar de planta" />
 
-    <!-- Checkbox -->
-    <label class="checkbox">
-      <input type="checkbox" id="saveInfo" />
-      Guardar esta información adicional
-    </label>
+    <label>Usuarios (separados por comas)</label>
+    <textarea id="p1_users" placeholder="Ej: Juan, Ana, Pedro" rows="2"></textarea>
 
-    <!-- Botón -->
-    <button id="goBtn">Ir a Cuadrante</button>
+    <label>Mensaje genérico</label>
+    <textarea id="p1_msg" placeholder="Escribe un mensaje general" rows="2"></textarea>
+
+    <label>Cuadrante</label>
+    <input type="text" id="p1_cuadrante" placeholder="QU0000346545" />
+
+    <button onclick="goToPlant(1)">Ir a Planta 1</button>
   </div>
 
-  <!-- ✅ SDK modular de Firebase desde CDN -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  <!-- PLANTA 2 -->
+  <div class="plant-form">
+    <h2>Planta 2</h2>
 
-    // ✅ Configuración de tu proyecto Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyCYJBdDV0KoyUkFLb2vqCe5T8bGxPbMeLA",
-      authDomain: "cuadrante-rbs.firebaseapp.com",
-      databaseURL: "https://cuadrante-rbs-default-rtdb.firebaseio.com",
-      projectId: "cuadrante-rbs",
-      storageBucket: "cuadrante-rbs.firebasestorage.app",
-      messagingSenderId: "681753503592",
-      appId: "1:681753503592:web:e0c29422e66c25b3b498dd",
-      measurementId: "G-XG96N752K9"
-    };
+    <label>Título del aviso</label>
+    <input type="text" id="p2_title" />
 
-    // Inicializar Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    <label>Usuarios (separados por comas)</label>
+    <textarea id="p2_users" rows="2"></textarea>
 
-    // Guardar datos en la base de datos y redirigir
-    document.getElementById("goBtn").addEventListener("click", async () => {
-      const text = document.getElementById("textInput").value.trim();
-      const additionalText = document.getElementById("additionalText").value.trim();
-      const saveInfo = document.getElementById("saveInfo").checked;
+    <label>Mensaje genérico</label>
+    <textarea id="p2_msg" rows="2"></textarea>
 
-      if (!text) {
-        alert("Por favor, introduce el cuadrante de trabajo.");
-        return;
-      }
+    <label>Cuadrante</label>
+    <input type="text" id="p2_cuadrante" />
 
-      try {
-        // 🔹 Guardamos los datos en Firebase Realtime Database
-        await set(ref(db, "cuadrante"), {
-          cuadrante: text,
-          info: saveInfo ? additionalText : "",
-          timestamp: Date.now()
-        });
+    <button onclick="goToPlant(2)">Ir a Planta 2</button>
+  </div>
 
-        window.location.href = "second.html";
-      } catch (error) {
-        alert("❌ Error al guardar: " + error.message);
-      }
-    });
-  </script>
+</div>
+
+<script>
+function goToPlant(num){
+  const data = {
+    title: document.getElementById(`p${num}_title`).value,
+    users: document.getElementById(`p${num}_users`).value,
+    msg: document.getElementById(`p${num}_msg`).value,
+    cuadrante: document.getElementById(`p${num}_cuadrante`).value
+  };
+
+  const params = new URLSearchParams(data).toString();
+  window.location.href = `planta.html?${params}`;
+}
+</script>
 </body>
 </html>
