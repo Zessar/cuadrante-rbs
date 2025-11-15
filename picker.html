@@ -54,20 +54,6 @@ h1 { text-align: center; margin-bottom: 20px; }
 </div>
 
 <script>
-// --- Obtener parámetros de la URL ---
-function getQueryParams() {
-  const params = new URLSearchParams(window.location.search);
-  const title = params.get('title') || 'Cuadrantes RBS';
-  const msg = params.get('msg') || '';
-  const pickerNum = params.get('picker') || '1';
-  const rawCuadrantes = params.get('cuadrantes') || '';
-  const cuadrantes = rawCuadrantes.split(',').map(c => {
-    const [code, priority] = c.split('|');
-    return { code, priority: priority || 'baja' };
-  });
-  return { title, msg, cuadrantes, pickerNum };
-}
-
 // --- Renderizar cuadrantes ---
 function renderCuadrantes(cuadrantes, title, msg){
   document.getElementById('pickerTitle').textContent = title || 'Cuadrantes RBS';
@@ -75,7 +61,7 @@ function renderCuadrantes(cuadrantes, title, msg){
   container.innerHTML = '';
   cuadrantes.forEach(c => {
     const div = document.createElement('div');
-    div.className = 'cuadrante-item cuadrante-' + c.priority;
+    div.className = 'cuadrante-item cuadrante-' + (c.priority || 'baja');
     div.textContent = c.code;
     div.onclick = () => {
       navigator.clipboard.writeText(c.code);
@@ -86,18 +72,18 @@ function renderCuadrantes(cuadrantes, title, msg){
   document.getElementById('msgContainer').textContent = msg || '';
 }
 
-// --- Inicializar con URL ---
-const initialParams = getQueryParams();
-renderCuadrantes(initialParams.cuadrantes, initialParams.title, initialParams.msg);
+// --- Inicialización por defecto ---
+renderCuadrantes([], 'Cuadrantes RBS', '');
 
 // --- Escuchar mensajes de index.html ---
 window.addEventListener('message', (event)=>{
   if(!event.data) return;
   const { type, data } = event.data;
   if(type==='update'){
-    renderCuadrantes(data.cuadrantes, data.title, data.msg);
+    const { title, msg, data: cuadrantes } = data;
+    renderCuadrantes(cuadrantes, title, msg);
   } else if(type==='clearChat'){
-    document.getElementById('chatMessages').innerHTML='';
+    chatMessagesDiv.innerHTML='';
   }
 });
 </script>
@@ -124,7 +110,7 @@ if(Notification.permission !== 'granted' && Notification.permission !== 'denied'
 }
 
 // --- Identificador del picker ---
-let pickerNum = initialParams.pickerNum;
+let pickerNum = '1';
 let pickerId = 'picker_' + pickerNum;
 
 // --- CHAT ---
@@ -173,6 +159,5 @@ window.sendMessage = async function(){
   input.value='';
 }
 </script>
-
 </body>
 </html>
