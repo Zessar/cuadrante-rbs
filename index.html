@@ -43,7 +43,7 @@ button.submit-btn:hover { background: #AB2202; }
 #chatInputContainer button { margin-left:5px; padding:8px 12px; background:#FF3A00; color:white; border:none; border-radius:5px; cursor:pointer;}
 </style>
 
-<!-- Firebase -->
+<!-- Firebase compat -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -138,7 +138,6 @@ button.submit-btn:hover { background: #AB2202; }
   <button class="submit-btn" onclick="openPickerChat(4)">Abrir Chat</button>
 </div>
 </div>
-
 </div>
 
 <!-- MODAL CHAT -->
@@ -155,29 +154,31 @@ button.submit-btn:hover { background: #AB2202; }
 </div>
 
 <script>
-// Config Firebase
+// ------------------- FIREBASE -------------------
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_DOMINIO.firebaseapp.com",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_BUCKET.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID"
+  apiKey: "AIzaSyCbh2FcoS3IK4wp4hXhX0NICGIDBbFQhGU",
+  authDomain: "gestor-de-plantas.firebaseapp.com",
+  projectId: "gestor-de-plantas",
+  storageBucket: "gestor-de-plantas.firebasestorage.app",
+  messagingSenderId: "653631965210",
+  appId: "1:653631965210:web:82e503927c1064610be9a3"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Sonido y notificación
+// ------------------- SONIDO Y NOTIFICACIÓN -------------------
 const notificationSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-
-function notifyUser(title, body) {
-  if (Notification.permission === 'granted') {
-    new Notification(title, {body});
+function notifyUser(title, body){
+  if(Notification.permission==='granted'){
+    new Notification(title,{body});
     notificationSound.play();
   }
 }
+if(Notification.permission !== 'granted' && Notification.permission !== 'denied'){
+  Notification.requestPermission();
+}
 
-// Plantas
+// ------------------- PLANTAS -------------------
 function addCuadrante(plantNum){
   const container = document.getElementById(`p${plantNum}_cuadrantes_container`);
   const input = document.createElement('input'); input.type='text'; input.placeholder='QU0000346545'; input.className='cuadrante_input';
@@ -188,17 +189,17 @@ function goToPlant(plantNum){
   const users = document.getElementById(`p${plantNum}_users`).value;
   const msg = document.getElementById(`p${plantNum}_msg`).value;
   const cuadrantes = Array.from(document.querySelectorAll(`#p${plantNum}_cuadrantes_container .cuadrante_input`))
-      .map(i => i.value).filter(v => v);
+      .map(i=>i.value).filter(v=>v);
   const data = { title, users, msg, cuadrantes: cuadrantes.join(',') };
   const plantUrls = {1:'first.html',2:'second.html',3:'third.html'};
   const url = plantUrls[plantNum];
   if(url) window.open(`${url}?${new URLSearchParams(data).toString()}`, '_blank');
 }
 
-// Pickers
+// ------------------- PICKERS -------------------
 function addPickerCuadrante(pickerNum){
   const container = document.getElementById(`picker${pickerNum}_cuadrantes_container`);
-  const input = document.createElement('input'); input.type='text'; input.className='picker_input'; input.placeholder='QU0000346545';
+  const input = document.createElement('input'); input.type='text'; input.placeholder='QU0000346545'; input.className='picker_input';
   const select = document.createElement('select'); select.className='picker_priority';
   ['baja','media','alta'].forEach(p=>{ const o=document.createElement('option'); o.value=p; o.text=p; select.appendChild(o); });
   container.appendChild(input); container.appendChild(select);
@@ -209,10 +210,10 @@ function goToPicker(pickerNum){
   const inputs = document.querySelectorAll(`#picker${pickerNum}_cuadrantes_container .picker_input`);
   const selects = document.querySelectorAll(`#picker${pickerNum}_cuadrantes_container .picker_priority`);
   const data = Array.from(inputs).map((i,idx)=>i.value+'|'+selects[idx].value);
-  window.open(`picker.html?${new URLSearchParams({title,msg,cuadrantes:data.join(',')}).toString()}`, '_blank');
+  window.open(`picker.html?pickerNum=${pickerNum}&${new URLSearchParams({title,msg,cuadrantes:data.join(',')}).toString()}`, '_blank');
 }
 
-// CHAT
+// ------------------- CHAT -------------------
 let currentPicker = null;
 let unsubscribe = null;
 
@@ -223,9 +224,9 @@ function openPickerChat(pickerNum){
   loadMessages();
 }
 
-function closeChat(){ 
-  document.getElementById('chatModal').style.display='none'; 
-  document.getElementById('chatMessages').innerHTML=''; 
+function closeChat(){
+  document.getElementById('chatModal').style.display='none';
+  document.getElementById('chatMessages').innerHTML='';
   if(unsubscribe) unsubscribe(); unsubscribe=null;
 }
 
@@ -245,8 +246,8 @@ function loadMessages(){
         div.innerHTML=`<b>${msg.user}:</b> ${msg.text}`;
         chatContainer.appendChild(div);
       });
-      chatContainer.scrollTop=chatContainer.scrollHeight;
-      // Notificación si mensaje reciente no es nuestro
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      // Notificación
       if(snapshot.docs.length>0){
         const last = snapshot.docs[snapshot.docs.length-1].data();
         if(last.user!=='Gestor') notifyUser(`Nuevo mensaje Picker ${currentPicker}`, last.text);
@@ -264,11 +265,6 @@ function sendMessage(){
     timestamp:firebase.firestore.FieldValue.serverTimestamp()
   });
   input.value='';
-}
-
-// Solicitar permiso notificaciones al cargar
-if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
-  Notification.requestPermission();
 }
 </script>
 </body>
