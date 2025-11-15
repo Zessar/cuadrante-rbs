@@ -2,71 +2,98 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Picker Autónomo</title>
+<title>Picker Chat</title>
 <style>
-body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; }
-.container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);}
-h1 { text-align: center; margin-bottom: 20px; }
-.cuadrante-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; margin-bottom: 6px; border-radius: 5px; color: white; font-weight: bold; }
-.cuadrante-baja { background-color: #28a745; }
-.cuadrante-media { background-color: #ffc107; color: black; }
-.cuadrante-alta { background-color: #dc3545; }
-button.copy-btn { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; background: #333; color: white; }
-button.copy-btn:hover { background: #555; }
-#msgContainer { margin-top: 20px; padding: 10px; background: #e0e0e0; border-radius: 6px; }
-@media (max-width: 600px) {
-  .container { width: 95%; padding: 15px; }
-  .cuadrante-item { flex-direction: column; align-items: flex-start; gap: 5px; }
-}
+body { font-family: Arial; background:#f0f0f5; padding:20px; }
+h2 { text-align:center; }
+#chatContainer { border:1px solid #ccc; border-radius:10px; padding:10px; max-width:500px; margin:auto; background:white; }
+#messages { height:300px; overflow-y:auto; border:1px solid #ddd; padding:5px; margin-bottom:10px; background:#fafafa; }
+input { width:80%; padding:8px; border-radius:5px; border:1px solid #ccc; }
+button { padding:8px 12px; border:none; border-radius:5px; background:#FF3A00; color:white; cursor:pointer; }
+#cuadrantes { margin-bottom:10px; }
+.cuadrante-item { margin-bottom:5px; }
 </style>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-<div class="container">
-<h1 id="pickerTitle">Cuadrantes RBS</h1>
-<div id="cuadrantesContainer"></div>
-<div id="msgContainer"></div>
+<h2 id="pickerTitle">Picker</h2>
+<div id="cuadrantes"></div>
+<div id="chatContainer">
+  <div id="messages"></div>
+  <input type="text" id="chatInput" placeholder="Escribe un mensaje...">
+  <button onclick="sendMessage()">Enviar</button>
 </div>
 
 <script>
-// Obtener parámetros de la URL
-function getQueryParams() {
-  const params = new URLSearchParams(window.location.search);
-  const title = params.get('title') || 'Cuadrantes RBS';
-  const msg = params.get('msg') || '';
-  const rawCuadrantes = params.get('cuadrantes') || '';
-  const cuadrantes = rawCuadrantes.split(',').map(c => {
-    const [code, priority] = c.split('|');
-    return { code, priority: priority || 'baja' };
-  });
-  return { title, msg, cuadrantes };
-}
+// Firebase config
+const firebaseConfig = { 
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_DOMINIO.firebaseapp.com",
+  projectId: "TU_PROJECT_ID",
+  storageBucket: "TU_BUCKET.appspot.com",
+  messagingSenderId: "TU_SENDER_ID",
+  appId: "TU_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-// Renderizar cuadrantes
-function renderCuadrantes() {
-  const { title, msg, cuadrantes } = getQueryParams();
-  document.getElementById('pickerTitle').textContent = title;
-  const container = document.getElementById('cuadrantesContainer');
-  container.innerHTML = '';
-  cuadrantes.forEach(c => {
+// Obtener pickerNum de URL
+const urlParams = new URLSearchParams(window.location.search);
+const pickerNum = urlParams.get('pickerNum') || 1;
+document.getElementById('pickerTitle').innerText = 'Picker '+pickerNum;
+
+// Mostrar cuadrantes pasados por URL
+const cuadrantesParam = urlParams.get('cuadrantes');
+const cuadrantesDiv = document.getElementById('cuadrantes');
+if(cuadrantesParam){
+  cuadrantesParam.split(',').forEach(c=>{
     const div = document.createElement('div');
-    div.className = 'cuadrante-item cuadrante-' + c.priority;
-    const span = document.createElement('span');
-    span.textContent = c.code;
-    const btn = document.createElement('button');
-    btn.className = 'copy-btn';
-    btn.textContent = 'Copiar';
-    btn.onclick = () => { navigator.clipboard.writeText(c.code); alert('✅ Cuadrante copiado: ' + c.code); };
-    div.appendChild(span);
-    div.appendChild(btn);
-    container.appendChild(div);
+    div.className='cuadrante-item';
+    div.innerText=c;
+    cuadrantesDiv.appendChild(div);
   });
-  // Mensaje genérico
-  const msgDiv = document.getElementById('msgContainer');
-  msgDiv.textContent = msg;
 }
 
-renderCuadrantes();
+// CHAT en tiempo real
+const messagesDiv = document.getElementById('messages');
+db.collection('pickers_chat').doc('picker_'+pickerNum).collection('messages')
+  .orderBy('timestamp')
+  .onSnapshot(snapshot=>{
+    messagesDiv.innerHTML='';
+    snapshot.forEach(doc=>{
+      const m = doc.data();
+      const div = document.createElement('div');
+      div.innerHTML=`<b>${m.user}:</b> ${m.text}`;
+      messagesDiv.appendChild(div);
+    });
+    messagesDiv.scrollTop=messagesDiv.scrollHeight;
+  });
+
+// Enviar mensaje
+function sendMessage(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  db.collection('pickers_chat').doc('picker_'+pickerNum).collection('messages').add({
+    user:'Picker '+pickerNum,
+    text:text,
+    timestamp:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  input.value='';
+}
+
+// Notificaciones
+function notifyNewMessage(user,text){
+  if(Notification.permission==='granted'){
+    new Notification('Nuevo mensaje de '+user, {body:text});
+  }
+}
+if(Notification.permission!=='granted'){
+  Notification.requestPermission();
+}
 </script>
 </body>
 </html>
