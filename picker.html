@@ -9,40 +9,48 @@ body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; }
 .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);}
 h1 { text-align: center; margin-bottom: 20px; }
 
-.cuadrante-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; margin-bottom: 6px; border-radius: 5px; color: white; font-weight: bold; }
+.cuadrante-item { display: flex; justify-content: center; align-items: center; padding: 15px; margin-bottom: 10px; border-radius: 5px; color: white; font-weight: bold; cursor:pointer; user-select:none; }
 .cuadrante-baja { background-color: #28a745; }
 .cuadrante-media { background-color: #ffc107; color: black; }
 .cuadrante-alta { background-color: #dc3545; }
-button.copy-btn { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; background: #333; color: white; }
-button.copy-btn:hover { background: #555; }
 
-#chatContainer { margin-top: 20px; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; display:flex; flex-direction:column; height:300px; }
-#chatMessages { flex:1; padding:10px; overflow-y:auto; background:#f9f9f9; }
-#chatInputContainer { display:flex; border-top:1px solid #ddd; }
-#chatInput { flex:1; padding:8px; border:none; }
-#chatInputContainer button { padding:8px 12px; background:#FF3A00; color:white; border:none; cursor:pointer; }
+#msgContainer { margin-top: 10px; padding: 10px; background: #e0e0e0; border-radius: 6px; }
 
-#msgContainer { margin-top: 20px; padding: 10px; background: #e0e0e0; border-radius: 6px; }
+#chatModal { display:none; position:fixed; bottom:5%; right:5%; width:350px; max-height:500px; background:white; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.2); flex-direction:column; z-index:1000; overflow:hidden; }
+#chatModalHeader { background:#FF3A00; color:white; padding:10px; font-weight:bold; display:flex; justify-content:space-between; }
+#chatMessages { padding:10px; height:300px; overflow-y:auto; background:#f9f9f9; }
+#chatInputContainer { display:flex; padding:10px; border-top:1px solid #ddd; }
+#chatInput { flex:1; padding:8px; border-radius:5px; border:1px solid #ccc; }
+#chatInputContainer button { margin-left:5px; padding:8px 12px; background:#FF3A00; color:white; border:none; border-radius:5px; cursor:pointer; }
+
+#openChatBtn { margin-top:20px; padding:10px 15px; background:#FF3A00; color:white; border:none; border-radius:5px; cursor:pointer; }
 
 @media (max-width: 600px) {
   .container { width: 95%; padding: 15px; }
-  .cuadrante-item { flex-direction: column; align-items: flex-start; gap: 5px; }
+  .cuadrante-item { padding: 12px; font-size: 1.1em; }
 }
 </style>
 </head>
 <body>
 <div class="container">
-<h1 id="pickerTitle">Cuadrantes RBS</h1>
-<div id="cuadrantesContainer"></div>
-<div id="msgContainer"></div>
+  <h1 id="pickerTitle">Cuadrantes RBS</h1>
+  <div id="cuadrantesContainer"></div>
+  <div id="msgContainer"></div>
 
-<div id="chatContainer">
-  <div id="chatMessages"></div>
-  <div id="chatInputContainer">
-    <input id="chatInput" type="text" placeholder="Escribe un mensaje...">
-    <button onclick="sendMessage()">Enviar</button>
+  <button id="openChatBtn">Abrir Chat</button>
+
+  <!-- CHAT MODAL -->
+  <div id="chatModal">
+    <div id="chatModalHeader">
+      <span id="chatTitle">Chat Picker</span>
+      <button onclick="closeChat()">X</button>
+    </div>
+    <div id="chatMessages"></div>
+    <div id="chatInputContainer">
+      <input id="chatInput" type="text" placeholder="Escribe un mensaje...">
+      <button onclick="sendMessage()">Enviar</button>
+    </div>
   </div>
-</div>
 </div>
 
 <script>
@@ -51,8 +59,8 @@ function getQueryParams() {
   const params = new URLSearchParams(window.location.search);
   const title = params.get('title') || 'Cuadrantes RBS';
   const msg = params.get('msg') || '';
-  const rawCuadrantes = params.get('cuadrantes') || '';
   const pickerNum = params.get('picker') || '1';
+  const rawCuadrantes = params.get('cuadrantes') || '';
   const cuadrantes = rawCuadrantes.split(',').map(c => {
     const [code, priority] = c.split('|');
     return { code, priority: priority || 'baja' };
@@ -60,7 +68,7 @@ function getQueryParams() {
   return { title, msg, cuadrantes, pickerNum };
 }
 
-// --- Renderizar cuadrantes ---
+// --- Renderizar cuadrantes clicables ---
 function renderCuadrantes() {
   const { title, msg, cuadrantes } = getQueryParams();
   document.getElementById('pickerTitle').textContent = title;
@@ -69,14 +77,11 @@ function renderCuadrantes() {
   cuadrantes.forEach(c => {
     const div = document.createElement('div');
     div.className = 'cuadrante-item cuadrante-' + c.priority;
-    const span = document.createElement('span');
-    span.textContent = c.code;
-    const btn = document.createElement('button');
-    btn.className = 'copy-btn';
-    btn.textContent = 'Copiar';
-    btn.onclick = () => { navigator.clipboard.writeText(c.code); alert('✅ Cuadrante copiado: ' + c.code); };
-    div.appendChild(span);
-    div.appendChild(btn);
+    div.textContent = c.code;
+    div.onclick = () => {
+      navigator.clipboard.writeText(c.code);
+      alert('✅ Cuadrante copiado: ' + c.code);
+    };
     container.appendChild(div);
   });
   document.getElementById('msgContainer').textContent = msg;
@@ -90,29 +95,34 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/fireba
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCbh2FcoS3IK4wp4hXhX0NICGIDBbFQhGU",
-    authDomain: "gestor-de-plantas.firebaseapp.com",
-    projectId: "gestor-de-plantas",
-    storageBucket: "gestor-de-plantas.firebasestorage.app",
-    messagingSenderId: "653631965210",
-    appId: "1:653631965210:web:82e503927c1064610be9a3",
-    measurementId: "G-G7PN58F09R"
+  apiKey: "AIzaSyCbh2FcoS3IK4wp4hXhX0NICGIDBbFQhGU",
+  authDomain: "gestor-de-plantas.firebaseapp.com",
+  projectId: "gestor-de-plantas",
+  storageBucket: "gestor-de-plantas.firebasestorage.app",
+  messagingSenderId: "653631965210",
+  appId: "1:653631965210:web:82e503927c1064610be9a3",
+  measurementId: "G-G7PN58F09R"
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Notificaciones
 const notificationSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
 if(Notification.permission !== 'granted' && Notification.permission !== 'denied'){
-    Notification.requestPermission();
+  Notification.requestPermission();
 }
 
-// Picker actual
 const { pickerNum } = getQueryParams();
 const pickerId = 'picker_' + pickerNum;
 
-// --- Cargar mensajes en tiempo real ---
+// CHAT POPUP
+const chatModal = document.getElementById('chatModal');
 const chatMessagesDiv = document.getElementById('chatMessages');
+let chatOpen = false;
+
+window.closeChat = () => { chatModal.style.display='none'; chatOpen=false; };
+document.getElementById('openChatBtn').onclick = () => { chatModal.style.display='flex'; chatOpen=true; chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; };
+
+// --- Escuchar mensajes ---
 const messagesRef = collection(db,'pickers',pickerId,'chat');
 const q = query(messagesRef, orderBy('timestamp'));
 onSnapshot(q, snapshot=>{
@@ -121,14 +131,19 @@ onSnapshot(q, snapshot=>{
     const msg = docSnap.data();
     const div = document.createElement('div');
     div.style.marginBottom='6px';
-    div.innerHTML=`<b>${msg.user}:</b> ${msg.text}`;
+    div.innerHTML = `<b>${msg.user}:</b> ${msg.text}`;
     chatMessagesDiv.appendChild(div);
   });
   chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
 
-  if(snapshot.docs.length>0){
+  if(snapshot.docs.length>0 && !chatOpen){
     const last = snapshot.docs[snapshot.docs.length-1].data();
-    if(last.user !== pickerId) new Notification('Nuevo mensaje', {body:last.text}).play();
+    if(last.user !== pickerId){
+      chatModal.style.display='flex';
+      chatOpen = true;
+      new Notification('Nuevo mensaje', {body:last.text});
+      notificationSound.play();
+    }
   }
 });
 
