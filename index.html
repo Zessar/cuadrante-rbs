@@ -197,8 +197,38 @@ function goToPlant(plantNum){
     .map(i=>i.value).filter(v=>v);
   const data = { title, users, msg, cuadrantes: cuadrantes.join(',')};
   const params = new URLSearchParams(data).toString();
-  window.open(`second.html?${params}`, '_blank');
+
+  // Abrir la URL correspondiente según la planta
+  let url = '';
+  switch(plantNum){
+    case 1: url = 'second.html'; break;
+    case 2: url = 'planta2.html'; break;
+    case 3: url = 'planta3.html'; break;
+  }
+
+  if(url) window.open(`${url}?${params}`, '_blank');
 }
+
+// Pickers
+function addPickerCuadrante(pickerNum){
+  const container = document.getElementById(`picker${pickerNum}_cuadrantes_container`);
+  const input = document.createElement('input'); input.type='text'; input.className='picker_input'; input.placeholder='QU0000346545';
+  const select = document.createElement('select'); select.className='picker_priority';
+  ['baja','media','alta'].forEach(p=> { const opt=document.createElement('option'); opt.value=p; opt.text=p; select.appendChild(opt); });
+  container.appendChild(input); container.appendChild(select);
+}
+
+function goToPicker(pickerNum){
+  const title = document.getElementById(`picker${pickerNum}_title`).value;
+  const msg = document.getElementById(`picker${pickerNum}_msg`).value;
+  const inputs = document.querySelectorAll(`#picker${pickerNum}_cuadrantes_container .picker_input`);
+  const selects = document.querySelectorAll(`#picker${pickerNum}_cuadrantes_container .picker_priority`);
+  const data = Array.from(inputs).map((i, idx)=> i.value + '|' + selects[idx].value);
+  const params = new URLSearchParams({ title, msg, cuadrantes: data.join(',') }).toString();
+  window.open(`picker.html?${params}`, '_blank');
+}
+
+function openPickerChat(pickerNum){ alert('Abrir chat del picker '+pickerNum+' (pendiente)'); }
 
 // Pickers
 function addPickerCuadrante(pickerNum){
@@ -225,3 +255,4 @@ function openPickerChat(pickerNum){ alert('Abrir chat del picker '+pickerNum+' (
 
 </body>
 </html>
+
