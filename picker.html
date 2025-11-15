@@ -13,87 +13,112 @@ button { padding:8px 12px; border:none; border-radius:5px; background:#FF3A00; c
 #cuadrantes { margin-bottom:10px; }
 .cuadrante-item { margin-bottom:5px; }
 </style>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
+
 <body>
 <h2 id="pickerTitle">Picker</h2>
 <div id="cuadrantes"></div>
+
 <div id="chatContainer">
   <div id="messages"></div>
   <input type="text" id="chatInput" placeholder="Escribe un mensaje...">
   <button onclick="sendMessage()">Enviar</button>
 </div>
 
-<script>
-// Firebase config
-const firebaseConfig = { 
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_DOMINIO.firebaseapp.com",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_BUCKET.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID"
+
+<!-- Firebase (SDK modular) -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { 
+  getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+// ------------------------------------------------------
+// 🔥 CONFIGURACIÓN REAL DE TU FIREBASE
+// ------------------------------------------------------
+const firebaseConfig = {
+  apiKey: "AIzaSyCbh2FcoS3IK4wp4hXhX0NICGIDBbFQhGU",
+  authDomain: "gestor-de-plantas.firebaseapp.com",
+  projectId: "gestor-de-plantas",
+  storageBucket: "gestor-de-plantas.firebasestorage.app",
+  messagingSenderId: "653631965210",
+  appId: "1:653631965210:web:82e503927c1064610be9a3",
+  measurementId: "G-G7PN58F09R"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
 
-// Obtener pickerNum de URL
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ------------------------------------------------------
+// 🔧 GET PARAMS
+// ------------------------------------------------------
 const urlParams = new URLSearchParams(window.location.search);
-const pickerNum = urlParams.get('pickerNum') || 1;
-document.getElementById('pickerTitle').innerText = 'Picker '+pickerNum;
+const pickerNum = urlParams.get('pickerNum') || "1";
+document.getElementById("pickerTitle").innerText = "Picker " + pickerNum;
 
-// Mostrar cuadrantes pasados por URL
-const cuadrantesParam = urlParams.get('cuadrantes');
-const cuadrantesDiv = document.getElementById('cuadrantes');
-if(cuadrantesParam){
-  cuadrantesParam.split(',').forEach(c=>{
-    const div = document.createElement('div');
-    div.className='cuadrante-item';
-    div.innerText=c;
-    cuadrantesDiv.appendChild(div);
+// ------------------------------------------------------
+// 📦 MOSTRAR CUADRANTES
+// ------------------------------------------------------
+const cuadrantesDiv = document.getElementById("cuadrantes");
+const cuadrantesParam = urlParams.get("cuadrantes");
+
+if (cuadrantesParam) {
+  cuadrantesParam.split(",").forEach(c => {
+    const d = document.createElement("div");
+    d.className = "cuadrante-item";
+    d.innerText = c;
+    cuadrantesDiv.appendChild(d);
   });
 }
 
-// CHAT en tiempo real
-const messagesDiv = document.getElementById('messages');
-db.collection('pickers_chat').doc('picker_'+pickerNum).collection('messages')
-  .orderBy('timestamp')
-  .onSnapshot(snapshot=>{
-    messagesDiv.innerHTML='';
-    snapshot.forEach(doc=>{
-      const m = doc.data();
-      const div = document.createElement('div');
-      div.innerHTML=`<b>${m.user}:</b> ${m.text}`;
-      messagesDiv.appendChild(div);
-    });
-    messagesDiv.scrollTop=messagesDiv.scrollHeight;
-  });
+// ------------------------------------------------------
+// 💬 CHAT (REAL TIME)
+// ------------------------------------------------------
+const messagesDiv = document.getElementById("messages");
 
-// Enviar mensaje
-function sendMessage(){
-  const input = document.getElementById('chatInput');
+const q = query(
+  collection(db, "pickers_chat", "picker_" + pickerNum, "messages"),
+  orderBy("timestamp")
+);
+
+onSnapshot(q, snapshot => {
+  messagesDiv.innerHTML = "";
+  snapshot.forEach(docSnap => {
+    const msg = docSnap.data();
+    const div = document.createElement("div");
+    div.innerHTML = `<b>${msg.user}:</b> ${msg.text}`;
+    messagesDiv.appendChild(div);
+  });
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+});
+
+// ------------------------------------------------------
+// 🚀 ENVIAR MENSAJE
+// ------------------------------------------------------
+window.sendMessage = async function sendMessage() {
+  const input = document.getElementById("chatInput");
   const text = input.value.trim();
-  if(!text) return;
-  db.collection('pickers_chat').doc('picker_'+pickerNum).collection('messages').add({
-    user:'Picker '+pickerNum,
-    text:text,
-    timestamp:firebase.firestore.FieldValue.serverTimestamp()
-  });
-  input.value='';
-}
+  if (!text) return;
 
-// Notificaciones
-function notifyNewMessage(user,text){
-  if(Notification.permission==='granted'){
-    new Notification('Nuevo mensaje de '+user, {body:text});
-  }
-}
-if(Notification.permission!=='granted'){
+  await addDoc(
+    collection(db, "pickers_chat", "picker_" + pickerNum, "messages"),
+    {
+      user: "Picker " + pickerNum,
+      text,
+      timestamp: serverTimestamp()
+    }
+  );
+
+  input.value = "";
+};
+
+// ------------------------------------------------------
+// 🔔 NOTIFICACIONES (PEDIR PERMISO)
+// ------------------------------------------------------
+if (Notification.permission !== "granted") {
   Notification.requestPermission();
 }
 </script>
+
 </body>
 </html>
