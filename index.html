@@ -1,118 +1,227 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gestor de Plantas - Landing</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f0f0f5; padding: 20px; }
-    .container { max-width: 1200px; margin: auto; }
-    h1 { text-align: center; margin-bottom: 30px; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestor de Plantas + Pickers</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f0f0f5; padding: 20px; }
+.container { max-width: 1400px; margin: auto; }
+h1 { text-align: center; margin-bottom: 30px; }
 
-    .form-row { display: flex; gap: 20px; flex-wrap: wrap; }
-    .plant-form {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      flex: 1;
-      min-width: 300px;
-    }
+.form-row { display: flex; flex-wrap: wrap; gap: 20px; }
+.plant-form, .picker-form {
+  background: white; padding: 20px; border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1); flex: 1; min-width: 300px;
+  margin-bottom: 20px;
+}
 
-    label { display: block; margin-top: 10px; font-weight: bold; }
-    input, textarea {
-      width: 100%; padding: 8px; border: 1px solid #ccc;
-      border-radius: 5px; margin-top: 4px;
-    }
+label { display: block; margin-top: 10px; font-weight: bold; }
+input, textarea, select { width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 5px; }
 
-    button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      background: #FF3A00;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    button:hover { background: #AB2202; }
-  </style>
+button.add-btn {
+  border: 1px solid #333; background: none; color: #333;
+  padding: 5px 10px; margin-left: 10px; cursor: pointer; border-radius: 4px;
+}
+button.add-btn:hover { background: #f0f0f0; }
+
+button.submit-btn {
+  margin-top: 15px; padding: 10px 20px; background: #FF3A00;
+  color: white; border: none; border-radius: 5px; cursor: pointer;
+}
+button.submit-btn:hover { background: #AB2202; }
+
+.cuadrante-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 5px; border-radius: 4px; }
+.cuadrante-item span { font-weight: bold; }
+</style>
 </head>
 <body>
 <div class="container">
-  <h1>Gestor de Plantas - Control Principal</h1>
+<h1>Gestor de Plantas + Pickers</h1>
 
-  <div class="form-row">
-    <!-- PLANTA 1 -->
-    <div class="plant-form">
-      <h2>Planta 1</h2>
-      <label>Título del aviso</label>
-      <input type="text" id="p1_title" placeholder="Ej: Cambiar de planta" />
+<div class="form-row">
 
-      <label>Usuarios (separados por comas)</label>
-      <textarea id="p1_users" placeholder="Ej: Juan, Ana, Pedro" rows="2"></textarea>
+<!-- FORMULARIOS DE PLANTAS -->
+<div class="plant-form" id="plant1Form">
+  <h2>Planta 1</h2>
+  <label>Título</label>
+  <input id="p1_title" type="text" placeholder="Ej: Cambiar de planta">
 
-      <label>Mensaje genérico</label>
-      <textarea id="p1_msg" placeholder="Escribe un mensaje general" rows="2"></textarea>
+  <label>Usuarios (separados por comas)</label>
+  <textarea id="p1_users" rows="3" placeholder="Usuario1, Usuario2"></textarea>
 
-      <label>Cuadrante</label>
-      <input type="text" id="p1_cuadrante" placeholder="QU0000346545" />
+  <label>Mensaje genérico</label>
+  <textarea id="p1_msg" rows="2"></textarea>
 
-      <button onclick="goToPlant(1)" target="_blank">Ir a Planta 1</button>
-    </div>
-
-    <!-- PLANTA 2 -->
-    <div class="plant-form">
-      <h2>Planta 2</h2>
-      <label>Título del aviso</label>
-      <input type="text" id="p2_title" />
-
-      <label>Usuarios (separados por comas)</label>
-      <textarea id="p2_users" rows="2"></textarea>
-
-      <label>Mensaje genérico</label>
-      <textarea id="p2_msg" rows="2"></textarea>
-
-      <label>Cuadrante</label>
-      <input type="text" id="p2_cuadrante" />
-
-      <button onclick="goToPlant(2)" target="_blank">Ir a Planta 2</button>
-    </div>
-
-    <!-- PLANTA 3 -->
-    <div class="plant-form">
-      <h2>Planta 3</h2>
-      <label>Título del aviso</label>
-      <input type="text" id="p3_title" />
-
-      <label>Usuarios (separados por comas)</label>
-      <textarea id="p3_users" rows="2"></textarea>
-
-      <label>Mensaje genérico</label>
-      <textarea id="p3_msg" rows="2"></textarea>
-
-      <label>Cuadrante</label>
-      <input type="text" id="p3_cuadrante" />
-
-      <button onclick="goToPlant(3)" target="_blank">Ir a Planta 3</button>
-    </div>
+  <label>Cuadrante
+    <button type="button" class="add-btn" onclick="addCuadrante(1)">Añadir</button>
+  </label>
+  <div id="p1_cuadrantes_container">
+    <input type="text" class="cuadrante_input" placeholder="QU0000346545">
   </div>
+
+  <button class="submit-btn" onclick="goToPlant(1)">Ver Planta 1</button>
+</div>
+
+<div class="plant-form" id="plant2Form">
+  <h2>Planta 2</h2>
+  <label>Título</label>
+  <input id="p2_title" type="text">
+  <label>Usuarios (separados por comas)</label>
+  <textarea id="p2_users" rows="3"></textarea>
+  <label>Mensaje genérico</label>
+  <textarea id="p2_msg" rows="2"></textarea>
+  <label>Cuadrante
+    <button type="button" class="add-btn" onclick="addCuadrante(2)">Añadir</button>
+  </label>
+  <div id="p2_cuadrantes_container">
+    <input type="text" class="cuadrante_input">
+  </div>
+  <button class="submit-btn" onclick="goToPlant(2)">Ver Planta 2</button>
+</div>
+
+<div class="plant-form" id="plant3Form">
+  <h2>Planta 3</h2>
+  <label>Título</label>
+  <input id="p3_title" type="text">
+  <label>Usuarios (separados por comas)</label>
+  <textarea id="p3_users" rows="3"></textarea>
+  <label>Mensaje genérico</label>
+  <textarea id="p3_msg" rows="2"></textarea>
+  <label>Cuadrante
+    <button type="button" class="add-btn" onclick="addCuadrante(3)">Añadir</button>
+  </label>
+  <div id="p3_cuadrantes_container">
+    <input type="text" class="cuadrante_input">
+  </div>
+  <button class="submit-btn" onclick="goToPlant(3)">Ver Planta 3</button>
+</div>
 
 </div>
 
-<script>
-function goToPlant(num){
-  const data = {
-    title: document.getElementById(`p${num}_title`).value,
-    users: document.getElementById(`p${num}_users`).value,
-    msg: document.getElementById(`p${num}_msg`).value,
-    cuadrante: document.getElementById(`p${num}_cuadrante`).value
-  };
+<!-- FORMULARIOS PICKER AUTÓNOMO -->
+<h2>Pickers Autónomos</h2>
 
+<div class="picker-form" id="picker1Form">
+  <h3>Picker 1</h3>
+  <label>Título</label><input id="picker1_title" type="text">
+  <label>Mensaje genérico</label><textarea id="picker1_msg" rows="2"></textarea>
+  <label>Cuadrante
+    <button class="add-btn" onclick="addPickerCuadrante(1)">Añadir</button>
+  </label>
+  <div id="picker1_cuadrantes_container">
+    <input type="text" class="picker_input">
+    <select class="picker_priority">
+      <option value="baja">Baja</option>
+      <option value="media">Media</option>
+      <option value="alta">Alta</option>
+    </select>
+  </div>
+  <button class="submit-btn" onclick="goToPicker(1)">Ver Picker</button>
+  <button class="submit-btn" onclick="openPickerChat(1)">Abrir Chat</button>
+</div>
+
+<div class="picker-form" id="picker2Form">
+  <h3>Picker 2</h3>
+  <label>Título</label><input id="picker2_title" type="text">
+  <label>Mensaje genérico</label><textarea id="picker2_msg" rows="2"></textarea>
+  <label>Cuadrante
+    <button class="add-btn" onclick="addPickerCuadrante(2)">Añadir</button>
+  </label>
+  <div id="picker2_cuadrantes_container">
+    <input type="text" class="picker_input">
+    <select class="picker_priority">
+      <option value="baja">Baja</option>
+      <option value="media">Media</option>
+      <option value="alta">Alta</option>
+    </select>
+  </div>
+  <button class="submit-btn" onclick="goToPicker(2)">Ver Picker</button>
+  <button class="submit-btn" onclick="openPickerChat(2)">Abrir Chat</button>
+</div>
+
+<div class="picker-form" id="picker3Form">
+  <h3>Picker 3</h3>
+  <label>Título</label><input id="picker3_title" type="text">
+  <label>Mensaje genérico</label><textarea id="picker3_msg" rows="2"></textarea>
+  <label>Cuadrante
+    <button class="add-btn" onclick="addPickerCuadrante(3)">Añadir</button>
+  </label>
+  <div id="picker3_cuadrantes_container">
+    <input type="text" class="picker_input">
+    <select class="picker_priority">
+      <option value="baja">Baja</option>
+      <option value="media">Media</option>
+      <option value="alta">Alta</option>
+    </select>
+  </div>
+  <button class="submit-btn" onclick="goToPicker(3)">Ver Picker</button>
+  <button class="submit-btn" onclick="openPickerChat(3)">Abrir Chat</button>
+</div>
+
+<div class="picker-form" id="picker4Form">
+  <h3>Picker 4</h3>
+  <label>Título</label><input id="picker4_title" type="text">
+  <label>Mensaje genérico</label><textarea id="picker4_msg" rows="2"></textarea>
+  <label>Cuadrante
+    <button class="add-btn" onclick="addPickerCuadrante(4)">Añadir</button>
+  </label>
+  <div id="picker4_cuadrantes_container">
+    <input type="text" class="picker_input">
+    <select class="picker_priority">
+      <option value="baja">Baja</option>
+      <option value="media">Media</option>
+      <option value="alta">Alta</option>
+    </select>
+  </div>
+  <button class="submit-btn" onclick="goToPicker(4)">Ver Picker</button>
+  <button class="submit-btn" onclick="openPickerChat(4)">Abrir Chat</button>
+</div>
+
+<script>
+// Plantas
+function addCuadrante(plantNum){
+  const container = document.getElementById(`p${plantNum}_cuadrantes_container`);
+  const input = document.createElement('input');
+  input.type='text';
+  input.placeholder='QU0000346545';
+  input.className='cuadrante_input';
+  container.appendChild(input);
+}
+
+function goToPlant(plantNum){
+  const title = document.getElementById(`p${plantNum}_title`).value;
+  const users = document.getElementById(`p${plantNum}_users`).value;
+  const msg = document.getElementById(`p${plantNum}_msg`).value;
+  const cuadrantes = Array.from(document.querySelectorAll(`#p${plantNum}_cuadrantes_container .cuadrante_input`))
+    .map(i=>i.value).filter(v=>v);
+  const data = { title, users, msg, cuadrantes: cuadrantes.join(',')};
   const params = new URLSearchParams(data).toString();
-  // Abrir en nueva pestaña
   window.open(`second.html?${params}`, '_blank');
 }
+
+// Pickers
+function addPickerCuadrante(pickerNum){
+  const container = document.getElementById(`picker${pickerNum}_cuadrantes_container`);
+  const input = document.createElement('input'); input.type='text'; input.className='picker_input'; input.placeholder='QU0000346545';
+  const select = document.createElement('select'); select.className='picker_priority';
+  ['baja','media','alta'].forEach(p=> { const opt=document.createElement('option'); opt.value=p; opt.text=p; select.appendChild(opt); });
+  container.appendChild(input); container.appendChild(select);
+}
+
+function goToPicker(pickerNum){
+  const title = document.getElementById(`picker${pickerNum}_title`).value;
+  const msg = document.getElementById(`picker${pickerNum}_msg`).value;
+  const inputs = document.querySelectorAll(`#picker${pickerNum}_cuadrantes_container .picker_input`);
+  const selects = document.querySelectorAll(`#picker${pickerNum}_cuadrantes_container .picker_priority`);
+  const data = Array.from(inputs).map((i, idx)=> i.value + '|' + selects[idx].value);
+  const params = new URLSearchParams({ title, msg, cuadrantes: data.join(',') }).toString();
+  window.open(`picker.html?${params}`, '_blank');
+}
+
+function openPickerChat(pickerNum){ alert('Abrir chat del picker '+pickerNum+' (pendiente)'); }
+
 </script>
+
 </body>
 </html>
