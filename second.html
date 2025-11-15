@@ -3,57 +3,87 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cuadrante RBS</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>Panel de Planta</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f0f5; padding: 20px; }
+    .layout { display: flex; gap: 20px; }
+
+    .panel {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      flex: 1;
+    }
+
+    h2 { margin-bottom: 15px; }
+
+    ul { padding-left: 20px; }
+
+    .barcode {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    #barcodeImg {
+      width: 100%;
+      max-width: 400px;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Cuadrante RBS</h1>
 
-    <!-- Cuadrante -->
-    <h2 id="textDisplay"></h2>
-    <button id="copyBtn">Copiar cuadrante</button>
+<h1>Panel de Planta</h1>
+<div class="layout">
 
-    <!-- Información adicional -->
-    <p id="infoText" class="infoText"></p>
+  <!-- PANEL IZQUIERDO -->
+  <div class="panel">
+    <h2 id="titulo"></h2>
+
+    <h3>Usuarios</h3>
+    <ul id="listaUsuarios"></ul>
+
+    <h3>Mensaje</h3>
+    <p id="mensaje"></p>
   </div>
 
-  <!-- ✅ SDK modular de Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  <!-- PANEL DERECHO -->
+  <div class="panel">
+    <h2>CUADRANTE</h2>
+    <h3 id="cuadranteTxt"></h3>
 
-    // Configuración Firebase (misma que en index.html)
-    const firebaseConfig = {
-      apiKey: "AIzaSyCYJBdDV0KoyUkFLb2vqCe5T8bGxPbMeLA",
-      authDomain: "cuadrante-rbs.firebaseapp.com",
-      databaseURL: "https://cuadrante-rbs-default-rtdb.firebaseio.com",
-      projectId: "cuadrante-rbs",
-      storageBucket: "cuadrante-rbs.firebasestorage.app",
-      messagingSenderId: "681753503592",
-      appId: "1:681753503592:web:e0c29422e66c25b3b498dd",
-      measurementId: "G-XG96N752K9"
-    };
+    <div class="barcode">
+      <img id="barcodeImg" />
+    </div>
+  </div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+</div>
 
-    // Escuchar los datos en tiempo real
-    const cuadranteRef = ref(db, "cuadrante");
-    onValue(cuadranteRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        document.getElementById("textDisplay").textContent = data.cuadrante || "";
-        document.getElementById("infoText").textContent = data.info || "";
-      }
-    });
+<script>
+// Obtener parámetros
+const params = new URLSearchParams(window.location.search);
+const title = params.get("title") || "";
+const users = params.get("users") || "";
+const msg = params.get("msg") || "";
+const cuadrante = params.get("cuadrante") || "";
 
-    // Copiar texto al portapapeles
-    document.getElementById("copyBtn").addEventListener("click", () => {
-      const text = document.getElementById("textDisplay").textContent;
-      navigator.clipboard.writeText(text);
-      alert("✅ Cuadrante copiado al portapapeles");
-    });
-  </script>
+// Colocar datos en la vista
+document.getElementById("titulo").textContent = title;
+document.getElementById("mensaje").textContent = msg;
+document.getElementById("cuadranteTxt").textContent = cuadrante;
+
+// Lista de usuarios
+document.getElementById("listaUsuarios").innerHTML = users
+  .split(',')
+  .map(u => `<li>${u.trim()}</li>`)
+  .join('');
+
+// Generar código de barras usando API gratuita (BWIPJS CDN)
+if (cuadrante) {
+  const barcodeUrl = `https://bwipjs-api.metafloor.com/?bcid=code128&text=${cuadrante}&scale=4&includetext`; 
+  document.getElementById("barcodeImg").src = barcodeUrl;
+}
+</script>
+
 </body>
 </html>
