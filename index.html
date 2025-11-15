@@ -15,7 +15,6 @@ h1 { text-align: center; margin-bottom: 30px; }
   box-shadow: 0 2px 6px rgba(0,0,0,0.1); flex: 1; min-width: 300px;
   margin-bottom: 20px;
 }
-
 .pickers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 20px; }
 
 label { display: block; margin-top: 10px; font-weight: bold; }
@@ -48,11 +47,6 @@ button.submit-btn:hover { background: #AB2202; }
 #chatInputContainer input { flex:1; padding:8px; border-radius:5px; border:1px solid #ccc;}
 #chatInputContainer button { margin-left:5px; padding:8px 12px; background:#FF3A00; color:white; border:none; border-radius:5px; cursor:pointer;}
 </style>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 </head>
 <body>
 <div class="container">
@@ -93,63 +87,55 @@ button.submit-btn:hover { background: #AB2202; }
 
 <h2>Pickers Autónomos</h2>
 <div class="pickers-grid">
-  <!-- PICKER 1 -->
-  <div class="picker-form" id="picker1Form">
-    <h3>Picker 1</h3>
-    <label>Título</label><input id="picker1_title" type="text">
-    <label>Mensaje genérico</label><textarea id="picker1_msg" rows="2"></textarea>
-    <label>Cuadrante <button class="add-btn" onclick="addPickerCuadrante(1)">Añadir</button></label>
-    <div id="picker1_cuadrantes_container">
-      <input type="text" class="picker_input">
-      <select class="picker_priority"><option>baja</option><option>media</option><option>alta</option></select>
-    </div>
-    <button class="submit-btn" onclick="goToPicker(1)">Ver Picker</button>
-    <button class="submit-btn" onclick="openPickerChat(1)">Abrir Chat</button>
+<!-- PICKERS 1-4 -->
+<div class="picker-form" id="picker1Form">
+  <h3>Picker 1</h3>
+  <label>Título</label><input id="picker1_title" type="text">
+  <label>Mensaje genérico</label><textarea id="picker1_msg" rows="2"></textarea>
+  <label>Cuadrante <button class="add-btn" onclick="addPickerCuadrante(1)">Añadir</button></label>
+  <div id="picker1_cuadrantes_container">
+    <input type="text" class="picker_input"><select class="picker_priority"><option>baja</option><option>media</option><option>alta</option></select>
   </div>
-
-  <!-- PICKER 2 -->
-  <div class="picker-form" id="picker2Form">
-    <h3>Picker 2</h3>
-    <label>Título</label><input id="picker2_title" type="text">
-    <label>Mensaje genérico</label><textarea id="picker2_msg" rows="2"></textarea>
-    <label>Cuadrante <button class="add-btn" onclick="addPickerCuadrante(2)">Añadir</button></label>
-    <div id="picker2_cuadrantes_container">
-      <input type="text" class="picker_input">
-      <select class="picker_priority"><option>baja</option><option>media</option><option>alta</option></select>
-    </div>
-    <button class="submit-btn" onclick="goToPicker(2)">Ver Picker</button>
-    <button class="submit-btn" onclick="openPickerChat(2)">Abrir Chat</button>
-  </div>
-
-  <!-- PICKER 3 -->
-  <div class="picker-form" id="picker3Form">
-    <h3>Picker 3</h3>
-    <label>Título</label><input id="picker3_title" type="text">
-    <label>Mensaje genérico</label><textarea id="picker3_msg" rows="2"></textarea>
-    <label>Cuadrante <button class="add-btn" onclick="addPickerCuadrante(3)">Añadir</button></label>
-    <div id="picker3_cuadrantes_container">
-      <input type="text" class="picker_input">
-      <select class="picker_priority"><option>baja</option><option>media</option><option>alta</option></select>
-    </div>
-    <button class="submit-btn" onclick="goToPicker(3)">Ver Picker</button>
-    <button class="submit-btn" onclick="openPickerChat(3)">Abrir Chat</button>
-  </div>
-
-  <!-- PICKER 4 -->
-  <div class="picker-form" id="picker4Form">
-    <h3>Picker 4</h3>
-    <label>Título</label><input id="picker4_title" type="text">
-    <label>Mensaje genérico</label><textarea id="picker4_msg" rows="2"></textarea>
-    <label>Cuadrante <button class="add-btn" onclick="addPickerCuadrante(4)">Añadir</button></label>
-    <div id="picker4_cuadrantes_container">
-      <input type="text" class="picker_input">
-      <select class="picker_priority"><option>baja</option><option>media</option><option>alta</option></select>
-    </div>
-    <button class="submit-btn" onclick="goToPicker(4)">Ver Picker</button>
-    <button class="submit-btn" onclick="openPickerChat(4)">Abrir Chat</button>
-  </div>
+  <button class="submit-btn" onclick="goToPicker(1)">Ver Picker</button>
+  <button class="submit-btn" onclick="openPickerChat(1)">Abrir Chat</button>
 </div>
 
+<div class="picker-form" id="picker2Form">
+  <h3>Picker 2</h3>
+  <label>Título</label><input id="picker2_title" type="text">
+  <label>Mensaje genérico</label><textarea id="picker2_msg" rows="2"></textarea>
+  <label>Cuadrante <button class="add-btn" onclick="addPickerCuadrante(2)">Añadir</button></label>
+  <div id="picker2_cuadrantes_container">
+    <input type="text" class="picker_input"><select class="picker_priority"><option>baja</option><option>media</option><option>alta</option></select>
+  </div>
+  <button class="submit-btn" onclick="goToPicker(2)">Ver Picker</button>
+  <button class="submit-btn" onclick="openPickerChat(2)">Abrir Chat</button>
+</div>
+
+<div class="picker-form" id="picker3Form">
+  <h3>Picker 3</h3>
+  <label>Título</label><input id="picker3_title" type="text">
+  <label>Mensaje genérico</label><textarea id="picker3_msg" rows="2"></textarea>
+  <label>Cuadrante <button class="add-btn" onclick="addPickerCuadrante(3)">Añadir</button></label>
+  <div id="picker3_cuadrantes_container">
+    <input type="text" class="picker_input"><select class="picker_priority"><option>baja</option><option>media</option><option>alta</option></select>
+  </div>
+  <button class="submit-btn" onclick="goToPicker(3)">Ver Picker</button>
+  <button class="submit-btn" onclick="openPickerChat(3)">Abrir Chat</button>
+</div>
+
+<div class="picker-form" id="picker4Form">
+  <h3>Picker 4</h3>
+  <label>Título</label><input id="picker4_title" type="text">
+  <label>Mensaje genérico</label><textarea id="picker4_msg" rows="2"></textarea>
+  <label>Cuadrante <button class="add-btn" onclick="addPickerCuadrante(4)">Añadir</button></label>
+  <div id="picker4_cuadrantes_container">
+    <input type="text" class="picker_input"><select class="picker_priority"><option>baja</option><option>media</option><option>alta</option></select>
+  </div>
+  <button class="submit-btn" onclick="goToPicker(4)">Ver Picker</button>
+  <button class="submit-btn" onclick="openPickerChat(4)">Abrir Chat</button>
+</div>
+</div>
 </div>
 
 <!-- MODAL CHAT -->
@@ -165,18 +151,31 @@ button.submit-btn:hover { background: #AB2202; }
   </div>
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, collection, doc, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js";
+
 // Firebase config
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_DOMINIO.firebaseapp.com",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_BUCKET.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID"
+  apiKey: "AIzaSyCbh2FcoS3IK4wp4hXhX0NICGIDBbFQhGU",
+  authDomain: "gestor-de-plantas.firebaseapp.com",
+  projectId: "gestor-de-plantas",
+  storageBucket: "gestor-de-plantas.firebasestorage.app",
+  messagingSenderId: "653631965210",
+  appId: "1:653631965210:web:82e503927c1064610be9a3",
+  measurementId: "G-G7PN58F09R"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getFirestore(app);
+
+// Sonido y notificación
+const notificationSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+function notifyUser(title, body){
+  if(Notification.permission==='granted'){ new Notification(title,{body}); notificationSound.play(); }
+}
 
 // Plantas
 function addCuadrante(plantNum){
@@ -190,11 +189,11 @@ function goToPlant(plantNum){
   const users = document.getElementById(`p${plantNum}_users`).value;
   const msg = document.getElementById(`p${plantNum}_msg`).value;
   const cuadrantes = Array.from(document.querySelectorAll(`#p${plantNum}_cuadrantes_container .cuadrante_input`))
-      .map(i => i.value).filter(v => v);
-  const data = { title, users, msg, cuadrantes: cuadrantes.join(',') };
-  const plantUrls = {1:'first.html',2:'second.html',3:'third.html'};
-  const url = plantUrls[plantNum];
-  if(url) window.open(`${url}?${new URLSearchParams(data).toString()}`, '_blank');
+      .map(i=>i.value).filter(v=>v);
+  const data = {title,users,msg,cuadrantes:cuadrantes.join(',')};
+  const plantUrls={1:'first.html',2:'second.html',3:'third.html'};
+  const url=plantUrls[plantNum];
+  if(url) window.open(`${url}?${new URLSearchParams(data).toString()}`,'_blank');
 }
 
 // Pickers
@@ -212,50 +211,71 @@ function goToPicker(pickerNum){
   const inputs = document.querySelectorAll(`#picker${pickerNum}_cuadrantes_container .picker_input`);
   const selects = document.querySelectorAll(`#picker${pickerNum}_cuadrantes_container .picker_priority`);
   const data = Array.from(inputs).map((i,idx)=>i.value+'|'+selects[idx].value);
-  window.open(`picker.html?${new URLSearchParams({title,msg,cuadrantes:data.join(',')}).toString()}`, '_blank');
+  window.open(`picker.html?${new URLSearchParams({title,msg,cuadrantes:data.join(',')}).toString()}`,'_blank');
 }
 
-// CHAT
-let currentPicker = null;
+// Chat
+let currentPicker=null;
+let unsubscribe=null;
+
 function openPickerChat(pickerNum){
-  currentPicker = pickerNum;
+  currentPicker=pickerNum;
   document.getElementById('chatTitle').innerText='Chat Picker '+pickerNum;
   document.getElementById('chatModal').style.display='flex';
   loadMessages();
 }
 
-function closeChat(){ document.getElementById('chatModal').style.display='none'; document.getElementById('chatMessages').innerHTML=''; }
+function closeChat(){ 
+  document.getElementById('chatModal').style.display='none'; 
+  document.getElementById('chatMessages').innerHTML=''; 
+  if(unsubscribe) unsubscribe(); unsubscribe=null;
+}
 
 function loadMessages(){
   if(!currentPicker) return;
-  const chatContainer = document.getElementById('chatMessages');
+  const chatContainer=document.getElementById('chatMessages');
   chatContainer.innerHTML='';
-  db.collection('pickers_chat').doc('picker_'+currentPicker).collection('messages')
-    .orderBy('timestamp')
-    .onSnapshot(snapshot=>{
-      chatContainer.innerHTML='';
-      snapshot.forEach(doc=>{
-        const msg = doc.data();
-        const div = document.createElement('div');
-        div.style.marginBottom='8px';
-        div.innerHTML=`<b>${msg.user}:</b> ${msg.text}`;
-        chatContainer.appendChild(div);
-      });
-      chatContainer.scrollTop=chatContainer.scrollHeight;
+
+  const q=query(collection(db,'pickers_chat','picker_'+currentPicker,'messages'), orderBy('timestamp'));
+  unsubscribe = onSnapshot(q,(snapshot)=>{
+    chatContainer.innerHTML='';
+    snapshot.forEach(docSnap=>{
+      const msg=docSnap.data();
+      const div=document.createElement('div');
+      div.style.marginBottom='8px';
+      div.innerHTML=`<b>${msg.user}:</b> ${msg.text}`;
+      chatContainer.appendChild(div);
     });
+    chatContainer.scrollTop=chatContainer.scrollHeight;
+
+    if(snapshot.docs.length>0){
+      const last=snapshot.docs[snapshot.docs.length-1].data();
+      if(last.user!=='Gestor') notifyUser(`Nuevo mensaje Picker ${currentPicker}`, last.text);
+    }
+  });
 }
 
-function sendMessage(){
-  const input = document.getElementById('chatInput');
-  const text = input.value.trim();
+async function sendMessage(){
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim();
   if(!text || !currentPicker) return;
-  db.collection('pickers_chat').doc('picker_'+currentPicker).collection('messages').add({
+  await addDoc(collection(db,'pickers_chat','picker_'+currentPicker,'messages'),{
     user:'Gestor',
     text:text,
-    timestamp:firebase.firestore.FieldValue.serverTimestamp()
+    timestamp:serverTimestamp()
   });
   input.value='';
 }
+
+// Pedir permisos notificación
+if(Notification.permission!=='granted' && Notification.permission!=='denied'){
+  Notification.requestPermission();
+}
+
+// Exponer funciones globales
+window.openPickerChat=openPickerChat;
+window.closeChat=closeChat;
+window.sendMessage=sendMessage;
 </script>
 </body>
 </html>
