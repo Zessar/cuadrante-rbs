@@ -2,151 +2,71 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Picker Chat</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Picker Autónomo</title>
 <style>
-body { font-family: Arial; background:#f0f0f5; padding:20px; }
-h2 { text-align:center; }
-
-#chatContainer {
-  border:1px solid #ccc; border-radius:10px; padding:10px;
-  max-width:500px; margin:auto; background:white;
+body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; }
+.container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);}
+h1 { text-align: center; margin-bottom: 20px; }
+.cuadrante-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; margin-bottom: 6px; border-radius: 5px; color: white; font-weight: bold; }
+.cuadrante-baja { background-color: #28a745; }
+.cuadrante-media { background-color: #ffc107; color: black; }
+.cuadrante-alta { background-color: #dc3545; }
+button.copy-btn { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; background: #333; color: white; }
+button.copy-btn:hover { background: #555; }
+#msgContainer { margin-top: 20px; padding: 10px; background: #e0e0e0; border-radius: 6px; }
+@media (max-width: 600px) {
+  .container { width: 95%; padding: 15px; }
+  .cuadrante-item { flex-direction: column; align-items: flex-start; gap: 5px; }
 }
-
-#messages {
-  height:300px; overflow-y:auto; border:1px solid #ddd;
-  padding:5px; margin-bottom:10px; background:#fafafa;
-}
-
-input {
-  width:80%; padding:8px; border-radius:5px; border:1px solid #ccc;
-}
-
-button {
-  padding:8px 12px; border:none; border-radius:5px;
-  background:#FF3A00; color:white; cursor:pointer;
-}
-
-#cuadrantes { margin-bottom:10px; }
-.cuadrante-item { margin-bottom:5px; }
 </style>
 </head>
-
 <body>
-
-<h2 id="pickerTitle">Picker</h2>
-<div id="cuadrantes"></div>
-
-<div id="chatContainer">
-  <div id="messages"></div>
-  <input type="text" id="chatInput" placeholder="Escribe un mensaje...">
-  <button onclick="sendMessage()">Enviar</button>
+<div class="container">
+<h1 id="pickerTitle">Cuadrantes RBS</h1>
+<div id="cuadrantesContainer"></div>
+<div id="msgContainer"></div>
 </div>
 
-<!-- Firebase compat (MISMO SDK QUE INDEX) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <script>
-// -------------------------------------------
-//  🔥 MISMA CONFIG QUE index.html
-// -------------------------------------------
-const firebaseConfig = {
-  apiKey: "AIzaSyCbh2FcoS3IK4wp4hXhX0NICGIDBbFQhGU",
-  authDomain: "gestor-de-plantas.firebaseapp.com",
-  projectId: "gestor-de-plantas",
-  storageBucket: "gestor-de-plantas.firebasestorage.app",
-  messagingSenderId: "653631965210",
-  appId: "1:653631965210:web:82e503927c1064610be9a3",
-  measurementId: "G-G7PN58F09R"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-// Sonido
-const notificationSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-
-// -------------------------------------------
-//  🔧 PARÁMETROS
-// -------------------------------------------
-const params = new URLSearchParams(window.location.search);
-const pickerNum = params.get("pickerNum") || "1";
-
-document.getElementById("pickerTitle").innerText = "Picker " + pickerNum;
-
-// Mostrar cuadrantes
-const cDiv = document.getElementById("cuadrantes");
-const cuadrantesParam = params.get("cuadrantes");
-
-if (cuadrantesParam) {
-  cuadrantesParam.split(",").forEach(c => {
-    const d = document.createElement("div");
-    d.className = "cuadrante-item";
-    d.innerText = c;
-    cDiv.appendChild(d);
+// Obtener parámetros de la URL
+function getQueryParams() {
+  const params = new URLSearchParams(window.location.search);
+  const title = params.get('title') || 'Cuadrantes RBS';
+  const msg = params.get('msg') || '';
+  const rawCuadrantes = params.get('cuadrantes') || '';
+  const cuadrantes = rawCuadrantes.split(',').map(c => {
+    const [code, priority] = c.split('|');
+    return { code, priority: priority || 'baja' };
   });
+  return { title, msg, cuadrantes };
 }
 
-// -------------------------------------------
-//  💬 CHAT EN TIEMPO REAL
-// -------------------------------------------
-const messagesDiv = document.getElementById("messages");
-
-db.collection("pickers_chat")
-  .doc("picker_" + pickerNum)
-  .collection("messages")
-  .orderBy("timestamp")
-  .onSnapshot(snapshot => {
-
-    messagesDiv.innerHTML = "";
-
-    snapshot.forEach(doc => {
-      const msg = doc.data();
-      const div = document.createElement("div");
-      div.innerHTML = `<b>${msg.user}:</b> ${msg.text}`;
-      messagesDiv.appendChild(div);
-    });
-
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-
-    // Notificación si último mensaje NO es del picker
-    if (snapshot.docs.length > 0) {
-      const last = snapshot.docs[snapshot.docs.length - 1].data();
-      if (last.user !== "Gestor") {
-        if (Notification.permission === "granted") {
-          new Notification(`Nuevo mensaje del Gestor`, { body: last.text });
-          notificationSound.play();
-        }
-      }
-    }
-
+// Renderizar cuadrantes
+function renderCuadrantes() {
+  const { title, msg, cuadrantes } = getQueryParams();
+  document.getElementById('pickerTitle').textContent = title;
+  const container = document.getElementById('cuadrantesContainer');
+  container.innerHTML = '';
+  cuadrantes.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'cuadrante-item cuadrante-' + c.priority;
+    const span = document.createElement('span');
+    span.textContent = c.code;
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'Copiar';
+    btn.onclick = () => { navigator.clipboard.writeText(c.code); alert('✅ Cuadrante copiado: ' + c.code); };
+    div.appendChild(span);
+    div.appendChild(btn);
+    container.appendChild(div);
   });
-
-// -------------------------------------------
-//  🚀 ENVIAR MENSAJE
-// -------------------------------------------
-function sendMessage(){
-  const input = document.getElementById("chatInput");
-  const text = input.value.trim();
-  if (!text) return;
-
-  db.collection("pickers_chat")
-    .doc("picker_" + pickerNum)
-    .collection("messages")
-    .add({
-      user: "Picker " + pickerNum,
-      text,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-  input.value = "";
+  // Mensaje genérico
+  const msgDiv = document.getElementById('msgContainer');
+  msgDiv.textContent = msg;
 }
 
-// Solicitar permiso notificaciones
-if (Notification.permission !== "granted") Notification.requestPermission();
-
+renderCuadrantes();
 </script>
-
 </body>
 </html>
