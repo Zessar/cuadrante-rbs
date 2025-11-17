@@ -30,6 +30,15 @@ h1 { text-align: center; margin-bottom: 20px; }
   .cuadrante-item { padding: 12px; font-size: 1.1em; }
 }
 
+@media (max-width: 500px) {
+  #chatModal {
+    width: 90%;
+    max-height: 80%;
+    bottom: 10%;
+    right: 5%;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -59,33 +68,36 @@ h1 { text-align: center; margin-bottom: 20px; }
 function renderCuadrantes(cuadrantes, title, msg){
   document.getElementById('pickerTitle').textContent = title || 'Cuadrantes RBS';
   const container = document.getElementById('cuadrantesContainer');
-  container.innerHTML = '';
+  container.innerHTML = ''; // Limpiar el contenedor antes de renderizar
+
   cuadrantes.forEach(c => {
     const div = document.createElement('div');
-    div.className = 'cuadrante-item cuadrante-' + (c.priority || 'baja');
-    div.textContent = c.code;
+    div.className = 'cuadrante-item cuadrante-' + (c.priority || 'baja'); // Usar la prioridad para asignar el color
+    div.textContent = c.code; // Mostrar el código del cuadrante
     div.onclick = () => {
       navigator.clipboard.writeText(c.code);
       alert('✅ Cuadrante copiado: ' + c.code);
     };
     container.appendChild(div);
   });
-  document.getElementById('msgContainer').textContent = msg || '';
+
+  document.getElementById('msgContainer').textContent = msg || ''; // Mostrar el mensaje genérico
 }
+
 
 // --- Inicialización por defecto ---
 renderCuadrantes([], 'Cuadrantes RBS', '');
 
 // --- Escuchar mensajes de index.html ---
-window.addEventListener('message', (event)=>{
+window.addEventListener('message', (event) => {
   if(!event.data) return;
   const { type, data } = event.data;
-  if(type==='update'){
-  const { title, msg, data: cuadrantes } = event.data.data; // ✅
-}
+  
+  if(type === 'update') {
+    const { title, msg, data: cuadrantes } = data; // Aquí corregimos la referencia a `data`
     renderCuadrantes(cuadrantes, title, msg);
-  } else if(type==='clearChat'){
-    chatMessagesDiv.innerHTML='';
+  } else if(type === 'clearChat'){
+    chatMessagesDiv.innerHTML = '';
   }
 });
 </script>
