@@ -89,17 +89,38 @@ function renderCuadrantes(cuadrantes, title, msg){
 renderCuadrantes([], 'Cuadrantes RBS', '');
 
 // --- Escuchar mensajes de index.html ---
+// --- Escuchar mensajes de index.html ---
 window.addEventListener('message', (event) => {
-  if(!event.data) return;
-  const { type, data } = event.data;
+  if (!event.data) return;
   
-  if(type === 'update') {
-    const { title, msg, data: cuadrantes } = data; // Aquí corregimos la referencia a `data`
-    renderCuadrantes(cuadrantes, title, msg);
-  } else if(type === 'clearChat'){
+  const { type, data } = event.data;
+  if (type === 'update') {
+    const { title, msg, data: cuadrantes } = data;
+
+    // Actualizar título y mensaje
+    document.getElementById('pickerTitle').textContent = title || 'Cuadrantes RBS';
+    document.getElementById('msgContainer').textContent = msg || '';
+
+    // Limpiar contenedor de cuadrantes
+    const container = document.getElementById('cuadrantesContainer');
+    container.innerHTML = '';
+
+    // Renderizar cuadrantes
+    cuadrantes.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'cuadrante-item cuadrante-' + (c.priority || 'baja');
+      div.textContent = c.code;
+      div.onclick = () => {
+        navigator.clipboard.writeText(c.code);
+        alert('✅ Cuadrante copiado: ' + c.code);
+      };
+      container.appendChild(div);
+    });
+  } else if (type === 'clearChat') {
     chatMessagesDiv.innerHTML = '';
   }
 });
+
 </script>
 
 <script type="module">
