@@ -310,14 +310,17 @@ function goToPicker(pickerNum){
         return { code, priority };
     });
 
-    // Abrir o actualizar picker.html
+    // Actualizamos los datos
+    const pickerData = { title, msg, data };
+
+    // Revisamos si la ventana está abierta o no
     if(openPickerWindows[pickerNum] && !openPickerWindows[pickerNum].closed){
-        openPickerWindows[pickerNum].postMessage({ type:'update', data: { title, msg, data } }, '*');
+        openPickerWindows[pickerNum].postMessage({ type:'update', data: pickerData }, '*');
     } else {
         openPickerWindows[pickerNum] = window.open('picker.html', '_blank');
-        setTimeout(()=> {
+        setTimeout(() => {
             if(openPickerWindows[pickerNum] && !openPickerWindows[pickerNum].closed){
-                openPickerWindows[pickerNum].postMessage({ type:'update', data: { title, msg, data } }, '*');
+                openPickerWindows[pickerNum].postMessage({ type:'update', data: pickerData }, '*');
             }
         }, 500);
     }
@@ -360,6 +363,7 @@ function notifyUser(title, body){
 </script>
 </body>
 </html>
+
 
 
 
