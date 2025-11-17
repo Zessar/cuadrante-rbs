@@ -225,9 +225,15 @@ button.submit-btn:hover { background: #AB2202; }
 </div>
 
 <script>
+
+  function getPickerURL() {
+    const base = location.href.substring(0, location.href.lastIndexOf("/") + 1);
+    return base + "picker.html";
+}
 // --- VENTANAS ABIERTAS ---
 const openPlantWindows = {};
-const openPickerWindows = {};
+openPickerWindows[pickerNum] = window.open(getPickerURL(), "_blank");
+
 
 // --- FUNCIONES PLANTAS ---
 function addCuadrante(plantNum){
@@ -303,27 +309,46 @@ function addPickerCuadrante(pickerNum){
 function goToPicker(pickerNum){
     const title = document.getElementById(`picker${pickerNum}_title`).value;
     const msg = document.getElementById(`picker${pickerNum}_msg`).value;
-    const wrappers = document.querySelectorAll(`#picker${pickerNum}_cuadrantes_container > div`);
-    const data = Array.from(wrappers).map(w => {
+
+    const container = document.getElementById(`picker${pickerNum}_cuadrantes_container`);
+
+    // Capturar primer cuadrante + añadidos
+    const wrappers = Array.from(container.children).map(child => {
+        if(child.tagName !== "DIV") {
+            return container; // primer cuadrante
+        }
+        return child; // cuadrantes añadidos
+    });
+
+    const data = wrappers.map(w => {
         const code = w.querySelector('.picker_input').value;
         const priority = w.querySelector('.picker_priority').value;
         return { code, priority };
     });
 
-    // Actualizamos los datos
     const pickerData = { title, msg, data };
+    const url = getPickerURL();
 
-    // Revisamos si la ventana está abierta o no
+    // Si ya está abierta → actualizar
     if(openPickerWindows[pickerNum] && !openPickerWindows[pickerNum].closed){
-        openPickerWindows[pickerNum].postMessage({ type:'update', data: pickerData }, '*');
-    } else {
-        openPickerWindows[pickerNum] = window.open('picker.html', '_blank');
-        setTimeout(() => {
-            if(openPickerWindows[pickerNum] && !openPickerWindows[pickerNum].closed){
-                openPickerWindows[pickerNum].postMessage({ type:'update', data: pickerData }, '*');
-            }
-        }, 500);
+        openPickerWindows[pickerNum].postMessage(
+            { type:'update', data: pickerData },
+            location.origin
+        );
+        return;
     }
+
+    // Si NO está abierta → abrirla y actualizarla después
+    openPickerWindows[pickerNum] = window.open(url, "_blank");
+
+    setTimeout(() => {
+        if(openPickerWindows[pickerNum] && !openPickerWindows[pickerNum].closed){
+            openPickerWindows[pickerNum].postMessage(
+                { type:'update', data: pickerData },
+                location.origin
+            );
+        }
+    }, 600);
 }
 
 // --- BORRAR CHAT DESDE INDEX ---
@@ -363,6 +388,7 @@ function notifyUser(title, body){
 </script>
 </body>
 </html>
+
 
 
 
