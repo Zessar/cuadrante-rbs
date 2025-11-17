@@ -80,7 +80,8 @@ window.addEventListener('message', (event)=>{
   if(!event.data) return;
   const { type, data } = event.data;
   if(type==='update'){
-    const { title, msg, data: cuadrantes } = data;
+  const { title, msg, data: cuadrantes } = event.data.data; // ✅
+}
     renderCuadrantes(cuadrantes, title, msg);
   } else if(type==='clearChat'){
     chatMessagesDiv.innerHTML='';
