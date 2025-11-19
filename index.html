@@ -420,8 +420,8 @@ function notifyUser(title, body){
 </script>
 
 <!-- FIREBASE MODULE: inicializa db, chat send/load --- -->
+<!-- FIREBASE MODULE: Gestor chat -->
 <script type="module">
-// Import Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
@@ -438,25 +438,36 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Request notification permission
+// Notificaciones
 if(Notification.permission !== 'granted' && Notification.permission !== 'denied'){
     Notification.requestPermission();
 }
-
-// Function exposed to global scope to load messages for a specific picker in the index modal
-window.loadMessagesForPicker = function(pickerNum){
-    // unsubscribe previous
-    if(window.unsubscribeChatListener){
-        try { window.unsubscribeChatListener(); } catch(e){}
-        window.unsubscribeChatListener = null;
+function notifyUser(title, body){
+    if(Notification.permission==='granted'){
+        new Notification(title, { body });
+        const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+        audio.play();
     }
+}
+
+// Estado global
+let currentPickerChat = null;
+let unsubscribeChatListener = null;
+
+// Cargar mensajes de un picker
+window.loadMessagesForPicker = function(pickerNum){
+    if(unsubscribeChatListener){ unsubscribeChatListener(); unsubscribeChatListener=null; }
     if(!pickerNum) return;
+
+    currentPickerChat = pickerNum;
     const chatMessagesDiv = document.getElementById('chatMessages');
     chatMessagesDiv.innerHTML = '';
     const pickerId = 'picker_' + pickerNum;
+
     const messagesRef = collection(db, 'pickers', pickerId, 'chat');
     const q = query(messagesRef, orderBy('timestamp'));
-    window.unsubscribeChatListener = onSnapshot(q, snapshot => {
+
+    unsubscribeChatListener = onSnapshot(q, snapshot => {
         chatMessagesDiv.innerHTML = '';
         snapshot.forEach(docSnap => {
             const msg = docSnap.data();
@@ -467,24 +478,23 @@ window.loadMessagesForPicker = function(pickerNum){
         });
         chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
 
-        // If newest message is from picker (not Gestor) and modal closed -> notify
-        if(snapshot.docs.length > 0){
-            const last = snapshot.docs[snapshot.docs.length - 1].data();
+        // Notificar si hay mensaje nuevo del picker y modal cerrado
+        if(snapshot.docs.length>0){
+            const last = snapshot.docs[snapshot.docs.length-1].data();
             if(last.user !== 'Gestor' && document.getElementById('chatModal').style.display === 'none'){
-                notifyUser('Nuevo mensaje ' + pickerId, last.text);
+                notifyUser(`Nuevo mensaje ${pickerId}`, last.text);
             }
         }
-    }, err => {
-        console.error('Error chat snapshot index:', err);
-    });
+    }, err => console.error('Error chat snapshot index:', err));
 };
 
-// Send message as Gestor from index modal
+// Enviar mensaje
 window.sendMessage = async function(){
-    if(!currentPickerChat) return alert('Selecciona un picker antes (Abrir Chat).');
+    if(!currentPickerChat) return alert('Selecciona un picker primero.');
     const input = document.getElementById('chatInput');
     const text = input.value.trim();
     if(!text) return;
+
     const pickerId = 'picker_' + currentPickerChat;
     try {
         await addDoc(collection(db, 'pickers', pickerId, 'chat'), {
@@ -500,5 +510,7 @@ window.sendMessage = async function(){
 };
 </script>
 
+
 </body>
 </html>
+
