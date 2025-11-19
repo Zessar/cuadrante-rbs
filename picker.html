@@ -109,100 +109,101 @@ window.addEventListener('message', (ev) => {
 </script>
 
 <!-- FIREBASE CHAT (module) -->
+<!-- FIREBASE MODULE: Picker chat -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
+// --- Config Firebase ---
 const firebaseConfig = {
-  apiKey: "AIzaSyCbh2FcoS3IK4wp4hXhX0NICGIDBbFQhGU",
-  authDomain: "gestor-de-plantas.firebaseapp.com",
-  projectId: "gestor-de-plantas",
-  storageBucket: "gestor-de-plantas.firebasestorage.app",
-  messagingSenderId: "653631965210",
-  appId: "1:653631965210:web:82e503927c1064610be9a3",
-  measurementId: "G-G7PN58F09R"
+    apiKey: "AIzaSyCbh2FcoS3IK4wp4hXhX0NICGIDBbFQhGU",
+    authDomain: "gestor-de-plantas.firebaseapp.com",
+    projectId: "gestor-de-plantas",
+    storageBucket: "gestor-de-plantas.firebasestorage.app",
+    messagingSenderId: "653631965210",
+    appId: "1:653631965210:web:82e503927c1064610be9a3",
+    measurementId: "G-G7PN58F09R"
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const notificationSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+// Notificaciones
 if(Notification.permission !== 'granted' && Notification.permission !== 'denied'){
-  Notification.requestPermission();
+    Notification.requestPermission();
 }
-
-// chat UI references
-const chatModal = document.getElementById('chatModal');
-const chatMessagesDiv = document.getElementById('chatMessages');
-const openChatBtn = document.getElementById('openChatBtn');
-
-openChatBtn.addEventListener('click', () => {
-  chatModal.style.display = 'flex';
-  chatOpen = true;
-  chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-});
-
-window.closeChat = () => { chatModal.style.display='none'; chatOpen=false; };
-
-// subscribe helper
-function subscribeChatTo(pickerId) {
-  // unsubscribe previous
-  if(window.__picker_unsub) {
-    try { window.__picker_unsub(); } catch(e) {}
-    window.__picker_unsub = null;
-  }
-  if(!pickerId) return;
-  const messagesRef = collection(db, 'pickers', pickerId, 'chat');
-  const q = query(messagesRef, orderBy('timestamp'));
-  window.__picker_unsub = onSnapshot(q, snapshot => {
-    chatMessagesDiv.innerHTML = '';
-    snapshot.forEach(docSnap => {
-      const msg = docSnap.data();
-      const div = document.createElement('div');
-      div.style.marginBottom = '6px';
-      div.innerHTML = `<b>${msg.user}:</b> ${msg.text}`;
-      chatMessagesDiv.appendChild(div);
-    });
-    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-
-    // if new message and chat closed, show popup and notify
-    if(snapshot.docs.length > 0 && !chatOpen) {
-      const last = snapshot.docs[snapshot.docs.length - 1].data();
-      if(last.user !== 'Gestor') {
-        chatModal.style.display = 'flex';
-        chatOpen = true;
-        try { new Notification('Nuevo mensaje', { body: last.text }); } catch(e){}
-        notificationSound.play();
-      }
+function notifyUser(title, body){
+    if(Notification.permission==='granted'){
+        new Notification(title, { body });
+        const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+        audio.play();
     }
-  }, err => {
-    console.error('picker chat onSnapshot error', err);
-  });
 }
 
-// Expose subscribe to outer script that sets currentPickerId
-window.subscribeChatTo = subscribeChatTo;
+// Estado
+let currentPickerId = null;
+let unsubscribeChatListener = null;
 
-// send message as picker (this will make message appear in Firestore)
+// Escuchar mensajes de Gestor
+function subscribeChat(pickerId){
+    if(unsubscribeChatListener){ unsubscribeChatListener(); unsubscribeChatListener=null; }
+    if(!pickerId) return;
+    currentPickerId = pickerId;
+
+    const chatMessagesDiv = document.getElementById('chatMessages');
+    chatMessagesDiv.innerHTML = '';
+
+    const messagesRef = collection(db, 'pickers', pickerId, 'chat');
+    const q = query(messagesRef, orderBy('timestamp'));
+
+    unsubscribeChatListener = onSnapshot(q, snapshot => {
+        chatMessagesDiv.innerHTML = '';
+        snapshot.forEach(docSnap=>{
+            const msg = docSnap.data();
+            const div = document.createElement('div');
+            div.style.marginBottom='6px';
+            div.innerHTML = `<b>${msg.user}:</b> ${msg.text}`;
+            chatMessagesDiv.appendChild(div);
+        });
+        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+
+        // Notificar si hay mensaje del Gestor
+        if(snapshot.docs.length>0){
+            const last = snapshot.docs[snapshot.docs.length-1].data();
+            if(last.user==='Gestor'){
+                notifyUser('Nuevo mensaje Gestor', last.text);
+            }
+        }
+    }, err=>console.error('Error chat snapshot picker:',err));
+}
+
+// Enviar mensaje desde picker
 window.sendMessage = async function(){
-  const input = document.getElementById('chatInput');
-  const text = input.value.trim();
-  if(!text) return;
-  if(!currentPickerId) {
-    alert('Picker no identificado. Espera actualización desde el gestor.');
-    return;
-  }
-  try {
-    await addDoc(collection(db, 'pickers', currentPickerId, 'chat'), {
-      user: currentPickerId,
-      text,
-      timestamp: serverTimestamp()
-    });
-    input.value = '';
-  } catch(e){
-    console.error('Error enviando mensaje desde picker:', e);
-    alert('Error enviando mensaje. Mira consola.');
-  }
+    if(!currentPickerId) return alert('No hay chat abierto.');
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if(!text) return;
+
+    try {
+        await addDoc(collection(db, 'pickers', currentPickerId, 'chat'), {
+            user: 'Picker',
+            text,
+            timestamp: serverTimestamp()
+        });
+        input.value='';
+    } catch(e){
+        console.error('Error enviando mensaje picker:', e);
+        alert('Error enviando mensaje. Mira la consola.');
+    }
 };
+
+// Recibir pickerId desde index
+window.addEventListener('message', ev=>{
+    if(ev.origin !== location.origin) return;
+    if(ev.data.pickerId){
+        subscribeChat(ev.data.pickerId);
+    }
+});
 </script>
+
 </body>
 </html>
