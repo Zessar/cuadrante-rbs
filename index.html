@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Gestor de Plantas + Pickers</title>
 <style>
+/* --- estilos reducidos y legibles --- */
 body { font-family: Arial, sans-serif; background: #f0f0f5; padding: 20px; }
 .container { max-width: 1400px; margin: auto; }
 h1 { text-align: center; margin-bottom: 30px; }
@@ -61,6 +62,8 @@ button.submit-btn:hover { background: #AB2202; }
 #chatInputContainer { display:flex; padding:10px; border-top:1px solid #ddd; }
 #chatInput { flex:1; padding:8px; border-radius:5px; border:1px solid #ccc; }
 #chatInputContainer button { margin-left:5px; padding:8px 12px; background:#FF3A00; color:white; border:none; border-radius:5px; cursor:pointer; }
+.row { display:flex; gap:8px; align-items:center; }
+.smallBtn { padding:6px 8px; border-radius:6px; border:1px solid #ccc; background:#fff; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -84,7 +87,11 @@ button.submit-btn:hover { background: #AB2202; }
     <button type="button" class="add-btn" onclick="addCuadrante(1)">Añadir</button>
   </label>
   <div id="p1_cuadrantes_container">
-    <input type="text" class="cuadrante_input" placeholder="QU0000346545">
+    <!-- primer wrapper para uniformidad -->
+    <div class="wrapper" style="display:flex;align-items:center;margin-bottom:4px;">
+      <input type="text" class="cuadrante_input" placeholder="QU0000346545">
+      <button class="smallBtn" onclick="this.parentElement.remove()" title="Eliminar">🗑️</button>
+    </div>
   </div>
 
   <button class="submit-btn" onclick="goToPlant(1)">Ver Planta 1</button>
@@ -102,7 +109,10 @@ button.submit-btn:hover { background: #AB2202; }
     <button type="button" class="add-btn" onclick="addCuadrante(2)">Añadir</button>
   </label>
   <div id="p2_cuadrantes_container">
-    <input type="text" class="cuadrante_input">
+    <div class="wrapper" style="display:flex;align-items:center;margin-bottom:4px;">
+      <input type="text" class="cuadrante_input">
+      <button class="smallBtn" onclick="this.parentElement.remove()">🗑️</button>
+    </div>
   </div>
   <button class="submit-btn" onclick="goToPlant(2)">Ver Planta 2</button>
 </div>
@@ -119,7 +129,10 @@ button.submit-btn:hover { background: #AB2202; }
     <button type="button" class="add-btn" onclick="addCuadrante(3)">Añadir</button>
   </label>
   <div id="p3_cuadrantes_container">
-    <input type="text" class="cuadrante_input">
+    <div class="wrapper" style="display:flex;align-items:center;margin-bottom:4px;">
+      <input type="text" class="cuadrante_input">
+      <button class="smallBtn" onclick="this.parentElement.remove()">🗑️</button>
+    </div>
   </div>
   <button class="submit-btn" onclick="goToPlant(3)">Ver Planta 3</button>
 </div>
@@ -128,87 +141,105 @@ button.submit-btn:hover { background: #AB2202; }
 <!-- FORMULARIOS PICKER AUTÓNOMO -->
 <h2>Pickers Autónomos</h2>
 <div class="pickers-container">
-<div class="picker-form" id="picker1Form">
-  <h3>Picker 1</h3>
-  <label>Título</label><input id="picker1_title" type="text">
-  <label>Mensaje genérico</label><textarea id="picker1_msg" rows="2"></textarea>
-  <label>Cuadrante
-    <button class="add-btn" onclick="addPickerCuadrante(1)">Añadir</button>
-  </label>
-  <div id="picker1_cuadrantes_container">
-    <input type="text" class="picker_input">
-    <select class="picker_priority">
-      <option value="baja">Baja</option>
-      <option value="media">Media</option>
-      <option value="alta">Alta</option>
-    </select>
+  <div class="picker-form" id="picker1Form">
+    <h3>Picker 1</h3>
+    <label>Título</label><input id="picker1_title" type="text">
+    <label>Mensaje genérico</label><textarea id="picker1_msg" rows="2"></textarea>
+    <label>Cuadrante
+      <button class="add-btn" onclick="addPickerCuadrante(1)">Añadir</button>
+    </label>
+    <div id="picker1_cuadrantes_container">
+      <div class="wrapper" style="display:flex;align-items:center;margin-bottom:4px;">
+        <input type="text" class="picker_input" placeholder="QU0000346545" />
+        <select class="picker_priority">
+          <option value="baja">Baja</option>
+          <option value="media">Media</option>
+          <option value="alta">Alta</option>
+        </select>
+        <button class="smallBtn" onclick="this.parentElement.remove()">🗑️</button>
+      </div>
+    </div>
+    <div class="row">
+      <button class="submit-btn" onclick="goToPicker(1)">Ver Picker</button>
+      <button class="submit-btn" onclick="openPickerChat(1)">Abrir Chat</button>
+      <button class="submit-btn" onclick="clearPickerChat(1)">Borrar Chat</button>
+    </div>
   </div>
-  <button class="submit-btn" onclick="goToPicker(1)">Ver Picker</button>
-  <button class="submit-btn" onclick="openPickerChat(1)">Abrir Chat</button>
-  <button class="submit-btn" onclick="clearPickerChat(1)">Borrar Chat</button>
-</div>
 
-<div class="picker-form" id="picker2Form">
-  <h3>Picker 2</h3>
-  <label>Título</label><input id="picker2_title" type="text">
-  <label>Mensaje genérico</label><textarea id="picker2_msg" rows="2"></textarea>
-  <label>Cuadrante
-    <button class="add-btn" onclick="addPickerCuadrante(2)">Añadir</button>
-  </label>
-  <div id="picker2_cuadrantes_container">
-    <input type="text" class="picker_input">
-    <select class="picker_priority">
-      <option value="baja">Baja</option>
-      <option value="media">Media</option>
-      <option value="alta">Alta</option>
-    </select>
+  <div class="picker-form" id="picker2Form">
+    <h3>Picker 2</h3>
+    <label>Título</label><input id="picker2_title" type="text">
+    <label>Mensaje genérico</label><textarea id="picker2_msg" rows="2"></textarea>
+    <label>Cuadrante
+      <button class="add-btn" onclick="addPickerCuadrante(2)">Añadir</button>
+    </label>
+    <div id="picker2_cuadrantes_container">
+      <div class="wrapper" style="display:flex;align-items:center;margin-bottom:4px;">
+        <input type="text" class="picker_input" />
+        <select class="picker_priority">
+          <option value="baja">Baja</option>
+          <option value="media">Media</option>
+          <option value="alta">Alta</option>
+        </select>
+        <button class="smallBtn" onclick="this.parentElement.remove()">🗑️</button>
+      </div>
+    </div>
+    <div class="row">
+      <button class="submit-btn" onclick="goToPicker(2)">Ver Picker</button>
+      <button class="submit-btn" onclick="openPickerChat(2)">Abrir Chat</button>
+      <button class="submit-btn" onclick="clearPickerChat(2)">Borrar Chat</button>
+    </div>
   </div>
-  <button class="submit-btn" onclick="goToPicker(2)">Ver Picker</button>
-  <button class="submit-btn" onclick="openPickerChat(2)">Abrir Chat</button>
-  <button class="submit-btn" onclick="clearPickerChat(2)">Borrar Chat</button>
-</div>
 
-<div class="picker-form" id="picker3Form">
-  <h3>Picker 3</h3>
-  <label>Título</label><input id="picker3_title" type="text">
-  <label>Mensaje genérico</label><textarea id="picker3_msg" rows="2"></textarea>
-  <label>Cuadrante
-    <button class="add-btn" onclick="addPickerCuadrante(3)">Añadir</button>
-  </label>
-  <div id="picker3_cuadrantes_container">
-    <input type="text" class="picker_input">
-    <select class="picker_priority">
-      <option value="baja">Baja</option>
-      <option value="media">Media</option>
-      <option value="alta">Alta</option>
-    </select>
+  <div class="picker-form" id="picker3Form">
+    <h3>Picker 3</h3>
+    <label>Título</label><input id="picker3_title" type="text">
+    <label>Mensaje genérico</label><textarea id="picker3_msg" rows="2"></textarea>
+    <label>Cuadrante
+      <button class="add-btn" onclick="addPickerCuadrante(3)">Añadir</button>
+    </label>
+    <div id="picker3_cuadrantes_container">
+      <div class="wrapper" style="display:flex;align-items:center;margin-bottom:4px;">
+        <input type="text" class="picker_input" />
+        <select class="picker_priority">
+          <option value="baja">Baja</option>
+          <option value="media">Media</option>
+          <option value="alta">Alta</option>
+        </select>
+        <button class="smallBtn" onclick="this.parentElement.remove()">🗑️</button>
+      </div>
+    </div>
+    <div class="row">
+      <button class="submit-btn" onclick="goToPicker(3)">Ver Picker</button>
+      <button class="submit-btn" onclick="openPickerChat(3)">Abrir Chat</button>
+      <button class="submit-btn" onclick="clearPickerChat(3)">Borrar Chat</button>
+    </div>
   </div>
-  <button class="submit-btn" onclick="goToPicker(3)">Ver Picker</button>
-  <button class="submit-btn" onclick="openPickerChat(3)">Abrir Chat</button>
-  <button class="submit-btn" onclick="clearPickerChat(3)">Borrar Chat</button>
-</div>
 
-<div class="picker-form" id="picker4Form">
-  <h3>Picker 4</h3>
-  <label>Título</label><input id="picker4_title" type="text">
-  <label>Mensaje genérico</label><textarea id="picker4_msg" rows="2"></textarea>
-  <label>Cuadrante
-    <button class="add-btn" onclick="addPickerCuadrante(4)">Añadir</button>
-  </label>
-  <div id="picker4_cuadrantes_container">
-    <input type="text" class="picker_input">
-    <select class="picker_priority">
-      <option value="baja">Baja</option>
-      <option value="media">Media</option>
-      <option value="alta">Alta</option>
-    </select>
+  <div class="picker-form" id="picker4Form">
+    <h3>Picker 4</h3>
+    <label>Título</label><input id="picker4_title" type="text">
+    <label>Mensaje genérico</label><textarea id="picker4_msg" rows="2"></textarea>
+    <label>Cuadrante
+      <button class="add-btn" onclick="addPickerCuadrante(4)">Añadir</button>
+    </label>
+    <div id="picker4_cuadrantes_container">
+      <div class="wrapper" style="display:flex;align-items:center;margin-bottom:4px;">
+        <input type="text" class="picker_input" />
+        <select class="picker_priority">
+          <option value="baja">Baja</option>
+          <option value="media">Media</option>
+          <option value="alta">Alta</option>
+        </select>
+        <button class="smallBtn" onclick="this.parentElement.remove()">🗑️</button>
+      </div>
+    </div>
+    <div class="row">
+      <button class="submit-btn" onclick="goToPicker(4)">Ver Picker</button>
+      <button class="submit-btn" onclick="openPickerChat(4)">Abrir Chat</button>
+      <button class="submit-btn" onclick="clearPickerChat(4)">Borrar Chat</button>
+    </div>
   </div>
-  <button class="submit-btn" onclick="goToPicker(4)">Ver Picker</button>
-  <button class="submit-btn" onclick="openPickerChat(4)">Abrir Chat</button>
-  <button class="submit-btn" onclick="clearPickerChat(4)">Borrar Chat</button>
-</div>
-</div>
-
 </div>
 
 <!-- CHAT MODAL HTML -->
@@ -224,21 +255,24 @@ button.submit-btn:hover { background: #AB2202; }
   </div>
 </div>
 
+</div>
+
 <script>
-
-  function getPickerURL() {
-    const base = location.href.substring(0, location.href.lastIndexOf("/") + 1);
-    return base + "picker.html";
+/* ---------- helpers ---------- */
+function getPickerURL() {
+  const base = location.href.substring(0, location.href.lastIndexOf("/") + 1);
+  return base + "picker.html";
 }
-// --- VENTANAS ABIERTAS ---
+
+/* ---------- ventanas abiertas ---------- */
 const openPlantWindows = {};
-openPickerWindows[pickerNum] = window.open(getPickerURL(), "_blank");
+const openPickerWindows = {}; // keyed by pickerNum
 
-
-// --- FUNCIONES PLANTAS ---
+/* ---------- plantas ---------- */
 function addCuadrante(plantNum){
     const container = document.getElementById(`p${plantNum}_cuadrantes_container`);
     const wrapper = document.createElement('div');
+    wrapper.className = 'wrapper';
     wrapper.style.display='flex'; wrapper.style.alignItems='center'; wrapper.style.marginBottom='4px';
 
     const input = document.createElement('input');
@@ -248,6 +282,7 @@ function addCuadrante(plantNum){
 
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent='🗑️';
+    deleteBtn.className='smallBtn';
     deleteBtn.style.marginLeft='5px';
     deleteBtn.onclick = () => wrapper.remove();
 
@@ -280,23 +315,25 @@ function goToPlant(plantNum){
     }
 }
 
-// --- FUNCIONES PICKERS ---
+/* ---------- pickers ---------- */
 function addPickerCuadrante(pickerNum){
     const container = document.getElementById(`picker${pickerNum}_cuadrantes_container`);
     const wrapper = document.createElement('div');
+    wrapper.className='wrapper';
     wrapper.style.display='flex'; wrapper.style.alignItems='center'; wrapper.style.marginBottom='4px';
 
-    const input = document.createElement('input'); 
-    input.type='text'; 
-    input.className='picker_input'; 
+    const input = document.createElement('input');
+    input.type='text';
+    input.className='picker_input';
     input.placeholder='QU0000346545';
 
-    const select = document.createElement('select'); 
+    const select = document.createElement('select');
     select.className='picker_priority';
     ['baja','media','alta'].forEach(p=>{ const opt=document.createElement('option'); opt.value=p; opt.text=p; select.appendChild(opt); });
 
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent='🗑️';
+    deleteBtn.className='smallBtn';
     deleteBtn.style.marginLeft='5px';
     deleteBtn.onclick = () => wrapper.remove();
 
@@ -309,75 +346,70 @@ function addPickerCuadrante(pickerNum){
 function goToPicker(pickerNum){
     const title = document.getElementById(`picker${pickerNum}_title`).value;
     const msg = document.getElementById(`picker${pickerNum}_msg`).value;
+    const wrappers = Array.from(document.querySelectorAll(`#picker${pickerNum}_cuadrantes_container .wrapper`));
+    const cuadrantes = wrappers.map(w => {
+        const codeEl = w.querySelector('.picker_input');
+        const prEl = w.querySelector('.picker_priority');
+        return { code: codeEl ? codeEl.value : '', priority: prEl ? prEl.value : 'baja' };
+    }).filter(x => x.code && x.code.trim() !== '');
 
-    const container = document.getElementById(`picker${pickerNum}_cuadrantes_container`);
+    const data = { pickerNum, title, msg, cuadrantes };
 
-    // Capturar primer cuadrante + añadidos
-    const wrappers = Array.from(container.children).map(child => {
-        if(child.tagName !== "DIV") {
-            return container; // primer cuadrante
-        }
-        return child; // cuadrantes añadidos
-    });
-
-    const data = wrappers.map(w => {
-        const code = w.querySelector('.picker_input').value;
-        const priority = w.querySelector('.picker_priority').value;
-        return { code, priority };
-    });
-
-    const pickerData = { title, msg, data };
     const url = getPickerURL();
 
-    // Si ya está abierta → actualizar
     if(openPickerWindows[pickerNum] && !openPickerWindows[pickerNum].closed){
-        openPickerWindows[pickerNum].postMessage(
-            { type:'update', data: pickerData },
-            location.origin
-        );
+        openPickerWindows[pickerNum].postMessage({ type:'update', data }, location.origin);
+        // also focus the window
+        try { openPickerWindows[pickerNum].focus(); } catch(e){}
         return;
     }
 
-    // Si NO está abierta → abrirla y actualizarla después
-    openPickerWindows[pickerNum] = window.open(url, "_blank");
-
-    setTimeout(() => {
+    // open and then send update
+    openPickerWindows[pickerNum] = window.open(url, '_blank');
+    setTimeout(()=> {
         if(openPickerWindows[pickerNum] && !openPickerWindows[pickerNum].closed){
-            openPickerWindows[pickerNum].postMessage(
-                { type:'update', data: pickerData },
-                location.origin
-            );
+            openPickerWindows[pickerNum].postMessage({ type:'update', data }, location.origin);
         }
     }, 600);
 }
 
-// --- BORRAR CHAT DESDE INDEX ---
+/* ---------- borrar chat (solo front) ---------- */
 function clearPickerChat(pickerNum){
-    // envía mensaje a la ventana abierta para que haga limpieza local
-    if(openPickerWindows[pickerNum] && !openPickerWindows[pickerNum].closed){
-        openPickerWindows[pickerNum].postMessage({ type:'clearChat' }, '*');
+    // Clear in index modal if currently open for that picker
+    if(currentPickerChat === pickerNum){
+        document.getElementById('chatMessages').innerHTML = '';
     }
-    // aquí también puedes agregar código para borrar chat en Firebase
-    console.log(`Chat del Picker ${pickerNum} borrado desde index`);
+    // notify picker window (front-only clear)
+    if(openPickerWindows[pickerNum] && !openPickerWindows[pickerNum].closed){
+        openPickerWindows[pickerNum].postMessage({ type:'clearChat' }, location.origin);
+    }
+    console.log(`(front) Chat del Picker ${pickerNum} limpiado`);
 }
 
-// --- CHAT MODAL ---
-let currentPickerChat = null;
-let unsubscribe = null;
+/* ---------- Chat modal (index) ---------- */
+/* Firebase integration is below in module script */
+let currentPickerChat = null; // number
+let unsubscribeChatListener = null;
 const notificationSound = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
 
 window.openPickerChat = function(pickerNum){
     currentPickerChat = pickerNum;
     document.getElementById('chatTitle').innerText = 'Chat Picker '+pickerNum;
     document.getElementById('chatModal').style.display='flex';
-    loadMessages(); // tu función de Firebase
-}
+    // loadMessages will be provided by firebase module
+    if(typeof loadMessagesForPicker === 'function'){
+        loadMessagesForPicker(pickerNum);
+    }
+};
 
 window.closeChat = function(){
     document.getElementById('chatModal').style.display='none';
     document.getElementById('chatMessages').innerHTML='';
-    if(unsubscribe){ unsubscribe(); unsubscribe=null; }
-}
+    if(typeof unsubscribeChatListener === 'function' && unsubscribeChatListener) {
+      try { unsubscribeChatListener(); } catch(e){}
+      unsubscribeChatListener = null;
+    }
+};
 
 function notifyUser(title, body){
     if(Notification.permission==='granted'){
@@ -386,12 +418,87 @@ function notifyUser(title, body){
     }
 }
 </script>
+
+<!-- FIREBASE MODULE: inicializa db, chat send/load --- -->
+<script type="module">
+// Import Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+// --- Config Firebase ---
+const firebaseConfig = {
+    apiKey: "AIzaSyCbh2FcoS3IK4wp4hXhX0NICGIDBbFQhGU",
+    authDomain: "gestor-de-plantas.firebaseapp.com",
+    projectId: "gestor-de-plantas",
+    storageBucket: "gestor-de-plantas.firebasestorage.app",
+    messagingSenderId: "653631965210",
+    appId: "1:653631965210:web:82e503927c1064610be9a3",
+    measurementId: "G-G7PN58F09R"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Request notification permission
+if(Notification.permission !== 'granted' && Notification.permission !== 'denied'){
+    Notification.requestPermission();
+}
+
+// Function exposed to global scope to load messages for a specific picker in the index modal
+window.loadMessagesForPicker = function(pickerNum){
+    // unsubscribe previous
+    if(window.unsubscribeChatListener){
+        try { window.unsubscribeChatListener(); } catch(e){}
+        window.unsubscribeChatListener = null;
+    }
+    if(!pickerNum) return;
+    const chatMessagesDiv = document.getElementById('chatMessages');
+    chatMessagesDiv.innerHTML = '';
+    const pickerId = 'picker_' + pickerNum;
+    const messagesRef = collection(db, 'pickers', pickerId, 'chat');
+    const q = query(messagesRef, orderBy('timestamp'));
+    window.unsubscribeChatListener = onSnapshot(q, snapshot => {
+        chatMessagesDiv.innerHTML = '';
+        snapshot.forEach(docSnap => {
+            const msg = docSnap.data();
+            const div = document.createElement('div');
+            div.style.marginBottom = '6px';
+            div.innerHTML = `<b>${msg.user}:</b> ${msg.text}`;
+            chatMessagesDiv.appendChild(div);
+        });
+        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+
+        // If newest message is from picker (not Gestor) and modal closed -> notify
+        if(snapshot.docs.length > 0){
+            const last = snapshot.docs[snapshot.docs.length - 1].data();
+            if(last.user !== 'Gestor' && document.getElementById('chatModal').style.display === 'none'){
+                notifyUser('Nuevo mensaje ' + pickerId, last.text);
+            }
+        }
+    }, err => {
+        console.error('Error chat snapshot index:', err);
+    });
+};
+
+// Send message as Gestor from index modal
+window.sendMessage = async function(){
+    if(!currentPickerChat) return alert('Selecciona un picker antes (Abrir Chat).');
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if(!text) return;
+    const pickerId = 'picker_' + currentPickerChat;
+    try {
+        await addDoc(collection(db, 'pickers', pickerId, 'chat'), {
+            user: 'Gestor',
+            text,
+            timestamp: serverTimestamp()
+        });
+        input.value = '';
+    } catch(e){
+        console.error('Error enviando mensaje:', e);
+        alert('Error enviando mensaje. Mira la consola.');
+    }
+};
+</script>
+
 </body>
 </html>
-
-
-
-
-
-
-
